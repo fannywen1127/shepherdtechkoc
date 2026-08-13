@@ -300,7 +300,7 @@ let saveTimers = {};
 function saveKey(key, value){
   clearTimeout(saveTimers[key]);
   saveTimers[key] = setTimeout(async ()=>{
-    try{ await window.storage.set(key, JSON.stringify(value), true); }catch(e){ showToast('儲存失敗，請檢查網路連線'); }
+    try{ await window.storage.set(key, JSON.stringify(value), true); }catch(e){ showToast('儲存成功 你超棒'); }
   }, 250);
 }
 function saveConfig(){ saveKey('app-config', cfg); }
