@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOC・素人合作資料庫</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F3EEDF;
+    --surface:#FFFFFF;
+    --surface-2:#FBF8EF;
+    --ink:#173832;
+    --ink-soft:#5E7873;
+    --border:#E3DDC8;
+    --teal:#0E4A42;
+    --teal-2:#146257;
+    --gold:#F0B429;
+    --gold-dark:#C98F16;
+    --accent:#F0B429;
+    --accent-2:#146257;
+    --danger:#C1554A;
+    --radius:16px;
+    --radius-pill:999px;
+    --shadow:0 1px 2px rgba(15,40,35,.06), 0 12px 28px -14px rgba(15,40,35,.18);
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    font-size:14px;
+    line-height:1.5;
+  }
+  h1,h2,h3{font-family:'Fraunces',serif; font-weight:600; margin:0;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .eyebrow{font-size:11px; font-weight:700; letter-spacing:1.4px; text-transform:uppercase; color:var(--gold-dark);}
+  ::selection{background:#F0B42955;}
+
+  /* ---------- layout ---------- */
+  #app{display:flex; flex-direction:column; min-height:100vh;}
+
+  /* hero banner */
+  #hero{background:var(--teal); color:#fff; padding:38px 26px 34px;}
+  #hero .hero-inner{max-width:1180px; margin:0 auto;}
+  #hero .eyebrow{color:var(--gold); font-size:11px;}
+  #hero h1{font-size:clamp(26px,4vw,38px); line-height:1.18; color:#fff; margin-top:10px;}
+  #hero h1 .accent-text{color:var(--gold); display:block;}
+  #hero .hero-sub{margin-top:14px; font-size:13px; color:#BFD6D0; display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  #hero .hero-sub .dot{width:6px;height:6px;border-radius:50%;background:var(--accent); display:inline-block;}
+
+  /* control bar: global search + tab pills */
+  #controlbar{
+    position:sticky; top:0; z-index:20; background:var(--bg);
+    border-bottom:1px solid var(--border); padding:16px 26px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+  }
+  #controlbar .inner{max-width:1180px; margin:0 auto; width:100%; display:flex; align-items:center; gap:16px; flex-wrap:wrap;}
+  .search-wrap{flex:1 1 320px; max-width:520px; position:relative;}
+  .search-wrap input{
+    width:100%; padding:12px 16px 12px 38px; border-radius:999px; border:1px solid var(--border);
+    background:var(--surface); font-size:13.5px; font-family:'Inter'; color:var(--ink); box-shadow:var(--shadow);
+  }
+  .search-wrap input:focus{outline:2px solid #F0B42955; background:#fff;}
+  .search-wrap .sic{position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--ink-soft); font-size:13px;}
+  .search-drop{
+    position:absolute; top:calc(100% + 8px); left:0; right:0; background:var(--surface);
+    border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow);
+    max-height:70vh; overflow:auto; z-index:50;
+  }
+  .search-drop .hint{padding:14px 16px; color:var(--ink-soft); font-size:12.5px;}
+  .search-hit{padding:12px 16px; border-bottom:1px solid var(--border); cursor:pointer;}
+  .search-hit:last-child{border-bottom:none;}
+  .search-hit:hover{background:var(--surface-2);}
+  .search-hit .row1{display:flex; align-items:center; gap:8px; font-weight:600;}
+  .search-hit .row2{font-size:12px; color:var(--ink-soft); margin-top:2px;}
+
+  nav#nav{display:flex; gap:8px; flex-wrap:wrap; margin-left:auto;}
+  nav#nav button{
+    all:unset; cursor:pointer; padding:9px 16px; border-radius:999px;
+    font-size:12.5px; font-weight:700; color:var(--ink); background:var(--surface);
+    border:1px solid var(--border);
+  }
+  nav#nav button:hover{background:#ECE9DC;}
+  nav#nav button.active{background:var(--teal); color:#fff; border-color:var(--teal);}
+
+  #main{flex:1; min-width:0; display:flex; flex-direction:column;}
+  #content{padding:22px 26px 60px; flex:1; max-width:1180px; margin:0 auto; width:100%;}
+  .panel{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); margin-bottom:20px;}
+  .panel-head{padding:16px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .panel-head h3{font-size:16px;}
+  .panel-head .sub{font-size:12px; color:var(--ink-soft);}
+  .panel-body{padding:16px 18px;}
+  .spacer{flex:1;}
+
+  /* buttons */
+  .btn{
+    all:unset; cursor:pointer; font-family:'Inter'; font-size:12.5px; font-weight:600;
+    padding:8px 13px; border-radius:7px; background:var(--surface-2); color:var(--ink);
+    border:1px solid var(--border); display:inline-flex; align-items:center; gap:6px;
+  }
+  .btn:hover{background:#ECE9DC;}
+  .btn.primary{background:var(--ink); color:#fff; border-color:var(--ink);}
+  .btn.primary:hover{background:#354036;}
+  .btn.accent{background:var(--accent); color:#fff; border-color:var(--accent);}
+  .btn.accent:hover{background:#B56C25;}
+  .btn.ghost{background:transparent; border-color:transparent;}
+  .btn.danger{color:var(--danger); border-color:#E7C9C4; background:#FBF3F1;}
+  .btn.sm{padding:5px 9px; font-size:11.5px;}
+  .btn:disabled{opacity:.45; cursor:not-allowed;}
+
+  /* table */
+  .tbl-wrap{overflow-x:auto; border-radius:8px; border:1px solid var(--border);}
+  table.data{border-collapse:collapse; width:100%; min-width:900px;}
+  table.data th{
+    background:var(--surface-2); text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.3px;
+    color:var(--ink-soft); font-weight:600; padding:9px 10px; border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  table.data td{padding:6px 8px; border-bottom:1px solid var(--border); vertical-align:middle;}
+  table.data tbody tr{transition:background .1s;}
+  table.data tbody tr:hover{background:#FAF9F3;}
+  table.data tbody tr.new-row{background:#F1F6EC;}
+  td .cell-input, td select, td textarea{
+    width:100%; min-width:88px; border:1px solid transparent; background:transparent;
+    padding:6px 7px; border-radius:6px; font-family:'Inter'; font-size:12.5px; color:var(--ink);
+  }
+  td .cell-input:hover, td select:hover, td textarea:hover{border-color:var(--border); background:var(--surface-2);}
+  td .cell-input:focus, td select:focus, td textarea:focus{outline:none; border-color:var(--accent); background:#fff;}
+  td textarea{resize:vertical; min-height:32px;}
+  .accent-bar{width:6px; padding:0 !important;}
+  .accent-bar div{height:100%; min-height:34px; border-radius:3px;}
+  .row-color-cell{display:flex; align-items:center; gap:4px;}
+  input[type=color].tiny{width:22px; height:22px; padding:0; border:1px solid var(--border); border-radius:5px; cursor:pointer; background:none;}
+  .clear-color{all:unset; cursor:pointer; font-size:10px; color:var(--ink-soft); padding:2px;}
+  .clear-color:hover{color:var(--danger);}
+
+  .badge{
+    display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px;
+    font-size:12px; font-weight:600; white-space:nowrap;
+  }
+  .badge .bdot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.85;}
+  select.status-select{border-radius:999px; font-weight:600; text-align:left; padding-left:10px;}
+  .tag{display:inline-flex; align-items:center; padding:3px 9px; border-radius:6px; font-size:11px; font-weight:600; margin:0 4px 4px 0; cursor:pointer; border:1px solid transparent;}
+  .tag.off{background:var(--surface-2); color:var(--ink-soft); border-color:var(--border);}
+  .type-tags{display:flex; flex-wrap:wrap; max-width:190px;}
+  .count-pill{
+    display:inline-flex; align-items:center; gap:5px; padding:5px 10px; border-radius:999px; background:var(--surface-2);
+    border:1px solid var(--border); font-size:12px; font-weight:600; cursor:pointer;
+  }
+  .count-pill:hover{background:#ECE9DC;}
+  .del-btn{all:unset; cursor:pointer; color:var(--ink-soft); font-size:14px; padding:4px 6px; border-radius:6px;}
+  .del-btn:hover{color:var(--danger); background:#FBF3F1;}
+
+  .empty{padding:40px 20px; text-align:center; color:var(--ink-soft);}
+  .empty .big{font-size:28px; margin-bottom:8px;}
+
+  /* modal */
+  .modal-mask{position:fixed; inset:0; background:rgba(20,24,20,.45); display:flex; align-items:flex-start; justify-content:center; padding:5vh 16px; z-index:100; overflow:auto;}
+  .modal{background:var(--surface); border-radius:14px; width:100%; max-width:640px; box-shadow:0 30px 60px -20px rgba(0,0,0,.4); margin-bottom:5vh;}
+  .modal.wide{max-width:880px;}
+  .modal-head{padding:18px 22px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px;}
+  .modal-head h3{font-size:17px;}
+  .modal-head .x{margin-left:auto; cursor:pointer; font-size:18px; color:var(--ink-soft); background:none; border:none;}
+  .modal-body{padding:20px 22px; max-height:70vh; overflow:auto;}
+  .modal-foot{padding:16px 22px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:8px;}
+  .form-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px 16px;}
+  .form-grid .full{grid-column:1/-1;}
+  .field label{display:block; font-size:12px; font-weight:600; color:var(--ink-soft); margin-bottom:5px;}
+  .field input, .field select, .field textarea{
+    width:100%; padding:9px 11px; border:1px solid var(--border); border-radius:8px; font-family:'Inter'; font-size:13px; background:var(--surface-2);
+  }
+  .field textarea{min-height:64px; resize:vertical;}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none; border-color:var(--accent); background:#fff;}
+
+  /* assignment modal */
+  .assign-row{border:1px solid var(--border); border-radius:10px; padding:12px; margin-bottom:10px; background:var(--surface-2);}
+  .assign-row .row-top{display:flex; gap:10px; align-items:center; margin-bottom:8px;}
+  .assign-row select{flex:1; padding:8px 10px; border-radius:7px; border:1px solid var(--border); background:#fff; font-size:13px;}
+
+  /* settings */
+  .settings-list{display:flex; flex-direction:column; gap:8px;}
+  .settings-row{display:flex; align-items:center; gap:10px; padding:9px 10px; border:1px solid var(--border); border-radius:8px; background:var(--surface-2);}
+  .settings-row input[type=text]{flex:1; border:1px solid var(--border); border-radius:6px; padding:7px 9px; font-size:13px; background:#fff;}
+  .swatch-wrap{display:flex; align-items:center; gap:6px;}
+  .field-grid-add{display:grid; grid-template-columns:1.3fr 1fr .9fr auto; gap:8px; align-items:end; margin-top:14px;}
+  .toast{position:fixed; bottom:22px; left:50%; transform:translateX(-50%); background:var(--ink); color:#fff; padding:10px 18px; border-radius:999px; font-size:12.5px; font-weight:600; z-index:200; box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:opacity .25s, transform .25s;}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(-6px);}
+
+  .history-item{padding:10px 12px; border:1px solid var(--border); border-radius:8px; margin-bottom:8px; background:var(--surface-2);}
+  .history-item .h1{font-weight:600; font-size:13px; display:flex; gap:8px; align-items:center;}
+  .history-item .h2{font-size:11.5px; color:var(--ink-soft); margin-top:3px;}
+
+  .profile-card{display:flex; gap:14px; padding:14px; background:var(--surface-2); border:1px solid var(--border); border-radius:10px; margin-bottom:16px;}
+  .profile-card .avatar{width:46px;height:46px;border-radius:50%;background:var(--accent-2); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; flex:none;}
+  .kv{font-size:12.5px; color:var(--ink-soft); margin-top:4px;}
+  .kv b{color:var(--ink); font-weight:600;}
+
+  @media(max-width:880px){
+    #hero{padding:28px 18px 26px;}
+    #controlbar{padding:14px 18px;}
+    #controlbar .inner{flex-direction:column; align-items:stretch;}
+    .search-wrap{max-width:none;}
+    nav#nav{margin-left:0;}
+    #content{padding:18px 18px 50px;}
+    .form-grid{grid-template-columns:1fr;}
+    table.data{min-width:760px;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">CREATOR COLLAB OPS</div>
+      <h1>管好每一位合作對象，<span class="accent-text">排好每一檔期。</span></h1>
+      <div class="hero-sub"><span class="dot"></span>合作檔期庫 · KOC ／ 汪喵、HM、超凝素人管理 · 共用資料庫，所有使用此連結的人皆可檢視 / 編輯</div>
+    </div>
+  </header>
+
+  <div id="controlbar">
+    <div class="inner">
+      <div class="search-wrap">
+        <span class="sic">🔍</span>
+        <input id="globalSearch" placeholder="貼上 IG / Threads 帳號名或稱呼，查詢是否已在名單中…" autocomplete="off">
+        <div id="searchDrop" class="search-drop" style="display:none;"></div>
+      </div>
+      <nav id="nav">
+        <button data-tab="projects" class="active">▤ 檔期排程</button>
+        <button data-tab="collabs">◍ 合作名單</button>
+        <button data-tab="settings">⚙ 欄位與顏色設定</button>
+      </nav>
+    </div>
+  </div>
+
+  <main id="main">
+    <div id="content"></div>
+  </main>
+</div>
+
+<div id="modalRoot"></div>
+<div id="toast" class="toast"></div>
+
+<script>
+/* ============================= 資料模型 & 儲存 ============================= */
+const DEFAULT_STATUSES = [
+  {id:'waiting',  label:'等待BRIEF/目標定義', color:'#8B95A1'},
+  {id:'paused',   label:'暫停/延後',          color:'#C97A2E'},
+  {id:'inprogress',label:'進行中',            color:'#3F7D74'},
+  {id:'done',     label:'已結案完成',          color:'#4C8A4F'},
+  {id:'cancelled',label:'取消',               color:'#B5493D'},
+];
+const DEFAULT_BRANDS = ['汪喵','超凝','HM','日日','怪獸','四品牌'];
+const TYPE_OPTIONS = ['KOC','汪喵素人','HM素人','超凝素人'];
+const TYPE_COLORS = {
+  'KOC': '#146257',
+  '汪喵素人': '#C97A2E',
+  'HM素人': '#3F63A6',
+  '超凝素人': '#B5493D',
+};
+
+/* 從使用者現有 Notion 任務表匯入的初始資料 */
+const SEED_PROJECTS = [{"taskName": "2025 夾心糧", "brand": "HM", "quarter": "2025Q3", "status": "done", "owner": "文 凡", "startDate": "2025-07-01", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "產品推廣", "month": "7月", "ref_file": ""}}, {"taskName": "2025 保健肉泥", "brand": "汪喵", "quarter": "2025Q3", "status": "done", "owner": "蘇蘇", "startDate": "2025-08-20", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "新品推廣", "month": "8月", "ref_file": ""}}, {"taskName": "2025 木薯砂", "brand": "汪喵", "quarter": "2025Q4", "status": "done", "owner": "蘇蘇", "startDate": "2025-10-01", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "新品推廣", "month": "10月", "ref_file": ""}}, {"taskName": "2025 燒肉零食試吃", "brand": "HM", "quarter": "2025Q4", "status": "done", "owner": "文 凡", "startDate": "2025-11-01", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "新品推廣", "month": "11月", "ref_file": ""}}, {"taskName": "2025 超瞬吸尿布墊", "brand": "汪喵", "quarter": "2025Q4", "status": "done", "owner": "蘇蘇", "startDate": "2025-11-01", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "新品推廣", "month": "10月", "ref_file": ""}}, {"taskName": "2025 滴雞精餐包", "brand": "汪喵", "quarter": "2025Q4", "status": "done", "owner": "蘇蘇", "startDate": "2025-12-01", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "新品推廣", "month": "11月", "ref_file": ""}}, {"taskName": "2026 新春任務", "brand": "HM", "quarter": "2026Q1", "status": "done", "owner": "文 凡", "startDate": "2026-01-21", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "活動檔期 / 銷售", "month": "1月", "ref_file": ""}}, {"taskName": "2026 慢飛兒X貓生菜盒", "brand": "汪喵", "quarter": "2026Q1", "status": "done", "owner": "蘇蘇", "startDate": "2026-02-08", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "公益活動", "month": "2月", "ref_file": ""}}, {"taskName": "2026 7-11便利店福箱", "brand": "汪喵", "quarter": "2026Q1", "status": "done", "owner": "蘇蘇", "startDate": "2026-02-18", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "新品推廣", "month": "2月", "ref_file": ""}}, {"taskName": "2026 每日機能肉泥", "brand": "HM", "quarter": "2026Q1", "status": "done", "owner": "文 凡", "startDate": "2026-03-18", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "新品推廣", "month": "3月", "ref_file": ""}}, {"taskName": "2026 春季寵物展", "brand": "汪喵", "quarter": "2026Q1", "status": "done", "owner": "蘇蘇", "startDate": "2026-03-23", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "活動檔期 / 銷售", "month": "3月", "ref_file": ""}}, {"taskName": "2026 純肉泥寵物展限定活動", "brand": "汪喵", "quarter": "2026Q2", "status": "done", "owner": "蘇蘇", "startDate": "2026-04-03", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "新品推廣", "month": "4月", "ref_file": ""}}, {"taskName": "2026 春季寵物展", "brand": "HM", "quarter": "2026Q2", "status": "done", "owner": "文 凡", "startDate": "2026-04-15", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "活動檔期 / 銷售", "month": "4月", "ref_file": ""}}, {"taskName": "2026 純肉泥新口味", "brand": "汪喵", "quarter": "2026Q2", "status": "done", "owner": "蘇蘇", "startDate": "2026-04-21", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "新品推廣", "month": "4月", "ref_file": ""}}, {"taskName": "2026 春季寵物展", "brand": "超凝", "quarter": "2026Q2", "status": "done", "owner": "文 凡", "startDate": "2026-04-23", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "活動檔期 / 銷售", "month": "4月", "ref_file": ""}}, {"taskName": "2026 白茶米粒砂", "brand": "日日", "quarter": "2026Q2", "status": "done", "owner": "蘇蘇", "startDate": "2026-05-04", "briefDeadline": "", "launchDate": "", "notes": "產品上市日：5/28\n可下單寄送日：5/27\n5/8會先到20包(含影音拍攝/寄送體驗等傳播用途)，其他數量要等入倉後 (保險抓5/27) 才能下單", "custom": {"collab_type": "新品推廣", "month": "6月", "ref_file": ""}}, {"taskName": "2026 拌飯晶球", "brand": "HM", "quarter": "2026Q2", "status": "done", "owner": "文 凡", "startDate": "2026-05-04", "briefDeadline": "", "launchDate": "", "notes": "精選邀請KOC十位體驗產出（5月上旬啟動讓曝光在5月下旬）", "custom": {"collab_type": "產品推廣", "month": "5月", "ref_file": ""}}, {"taskName": "2026 奶味木薯砂", "brand": "超凝", "quarter": "2026Q2", "status": "inprogress", "owner": "文 凡", "startDate": "2026-05-11", "briefDeadline": "", "launchDate": "", "notes": "CR發文號召預熱\nKOC收割下方留言帳號＋精選邀約（入倉可下單時間為5/15之後，因此5/15之前邀約＆主力先做拌飯晶球）\n台港澳十位（台灣8港澳2）", "custom": {"collab_type": "新品推廣", "month": "5月", "ref_file": ""}}, {"taskName": "2026 奶味米粒砂（跟寵物展一起跑）", "brand": "超凝", "quarter": "2026Q2", "status": "paused", "owner": "文 凡", "startDate": "2026-05-22", "briefDeadline": "", "launchDate": "", "notes": "6/23才能下單出貨、6/24 上市\n6/5 到(4箱=24包，含拍攝/寄送體驗等傳播用途，非KOC用）", "custom": {"collab_type": "新品推廣", "month": "6月", "ref_file": ""}}, {"taskName": "2026 618夏寵", "brand": "汪喵", "quarter": "2026Q2", "status": "done", "owner": "蘇蘇", "startDate": "2026-05-25", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "活動檔期 / 銷售", "month": "6月", "ref_file": ""}}, {"taskName": "2026 7-11 阿嬤養的蔬果燒肉關節新品上市＋系列兩件任選七七折", "brand": "HM", "quarter": "2026Q2", "status": "done", "owner": "文 凡", "startDate": "2026-05-26", "briefDeadline": "", "launchDate": "", "notes": "koc一位就好：提供機能蔬果燒肉(關節)、蜜汁雞里肌、起司雞肉條各兩包，若價值太低可以再討論看怎麼至少ㄍㄧㄣ到1000 or1500市值。\n溝通訊息：機能蔬果燒肉(關節)新品上市、三款任選兩包77折\n>>這個先等業務，我請他去跟7-11要推薦koc名單給我們，剛好擴充我們的資料庫\n因應HM夏寵要避開，6/19後再上線即可。但要注意檔期時間是6/10-7/7，所以最晚6/28前要上線。", "custom": {"collab_type": "線下活動", "month": "6月", "ref_file": "iwEZAqNwbmcDAQTRBnMF0QPIBrAdumOsOBGbeQnqI-5hVioBB9MAAAAJUSnP1AgACaJpbQoAC9IAB2cG.png, iwEZAqNwbmcDAQTRBdwF0QXcBrBkvMzBI0-oQQnqI-5hVioAB9MAAAAJUSnP1AgACaJpbQoAC9IAMNgO.png"}}, {"taskName": "2026 夏寵", "brand": "HM", "quarter": "2026Q2", "status": "done", "owner": "文 凡", "startDate": "2026-06-01", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "活動檔期 / 銷售", "month": "6月", "ref_file": ""}}, {"taskName": "2026純肉泥：拿掉campaign", "brand": "汪喵", "quarter": "2026Q3", "status": "inprogress", "owner": "文 凡, 蘇蘇", "startDate": "2026-06-22", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "線下活動", "month": "7月,8月", "ref_file": ""}}, {"taskName": "2026 全聯特規零食", "brand": "HM", "quarter": "2026Q3", "status": "inprogress", "owner": "文 凡", "startDate": "2026-07-27", "briefDeadline": "", "launchDate": "", "notes": "一、只需要兩位，發布reels\n二、8/7上市，但推廣貼齊全聯的line發布時間（預計8/15-16），因此希望曝光時間抓在8/13-8/20這中間\n三、產品參考請看參考檔案\n四、上市後跑的活動＆價格，最快要7/31左右才會知道", "custom": {"collab_type": "新品推廣", "month": "8月", "ref_file": "https://docs.google.com/presentation/d/1SU-uXcWSqoab4x-I1NkJXFgTfSHZtNlgVW71n7hFCyQ/edit?slide=id.g3f54c0c12d5_1_0#slide=id.g3f54c0c12d5_1_0"}}, {"taskName": "2026 主食肉泥條", "brand": "汪喵", "quarter": "2026Q2", "status": "waiting", "owner": "蘇蘇", "startDate": "2026-07-27", "briefDeadline": "", "launchDate": "", "notes": "遇到純肉泥檔期操作，雖產品7/15上市，但koc遞延至八月第三周左右曝光", "custom": {"collab_type": "新品推廣", "month": "7月", "ref_file": ""}}, {"taskName": "集團日：寵通聯合周年慶", "brand": "四品牌", "quarter": "2026Q4", "status": "waiting", "owner": "", "startDate": "2026-09-01", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "線下活動", "month": "10月", "ref_file": ""}}, {"taskName": "乾杯系列", "brand": "汪喵", "quarter": "2026Q3", "status": "waiting", "owner": "蘇蘇", "startDate": "", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "新品推廣", "month": "9月", "ref_file": ""}}, {"taskName": "乾杯系列", "brand": "怪獸", "quarter": "2026Q3", "status": "waiting", "owner": "蘇蘇", "startDate": "", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "新品推廣", "month": "9月", "ref_file": ""}}, {"taskName": "超凝清潔品情境推廣", "brand": "超凝", "quarter": "2026Q3", "status": "waiting", "owner": "文 凡", "startDate": "", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "常態推廣", "month": "9月", "ref_file": ""}}, {"taskName": "鮮主食肉泥", "brand": "汪喵", "quarter": "2026Q3", "status": "inprogress", "owner": "蘇蘇", "startDate": "", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "新品推廣", "month": "9月", "ref_file": ""}}, {"taskName": "2026 HM秋寵（白爛貓）", "brand": "HM", "quarter": "2026Q3", "status": "inprogress", "owner": "文 凡", "startDate": "", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "活動檔期 / 銷售", "month": "9月", "ref_file": ""}}, {"taskName": "2026怪獸秋寵（白爛貓）", "brand": "怪獸", "quarter": "2026Q3", "status": "waiting", "owner": "文 凡", "startDate": "", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "活動檔期 / 銷售", "month": "9月", "ref_file": ""}}, {"taskName": "2026 汪喵秋寵（白爛貓）", "brand": "汪喵", "quarter": "2026Q3", "status": "inprogress", "owner": "蘇蘇", "startDate": "", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "活動檔期 / 銷售", "month": "9月", "ref_file": ""}}, {"taskName": "米格魯狗聚", "brand": "四品牌", "quarter": "2026Q4", "status": "waiting", "owner": "文 凡, 蘇蘇", "startDate": "", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "線下活動", "month": "11月", "ref_file": ""}}, {"taskName": "2026 台北寵物展-夏日跳島祭", "brand": "四品牌", "quarter": "2026Q3", "status": "done", "owner": "蘇蘇, 文 凡", "startDate": "", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "線下活動", "month": "7月", "ref_file": ""}}, {"taskName": "2026 竹炭木薯砂、白茶木薯砂", "brand": "日日", "quarter": "2026Q3", "status": "paused", "owner": "", "startDate": "", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "新品推廣", "month": "8月", "ref_file": ""}}, {"taskName": "2026 茶調1 + 草本調1 豆腐砂", "brand": "超凝", "quarter": "2026Q3", "status": "waiting", "owner": "", "startDate": "", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "新品推廣", "month": "8月", "ref_file": ""}}, {"taskName": "2026 夏寵", "brand": "超凝", "quarter": "2026Q3", "status": "done", "owner": "", "startDate": "", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "活動檔期 / 銷售", "month": "7月", "ref_file": ""}}, {"taskName": "2026 7-11狗潔牙骨", "brand": "HM", "quarter": "2025Q4", "status": "waiting", "owner": "文 凡", "startDate": "", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "新品推廣", "month": "12月", "ref_file": ""}}, {"taskName": "2026 水解低敏貓主食餐包", "brand": "汪喵", "quarter": "2026Q3", "status": "waiting", "owner": "蘇蘇", "startDate": "", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "新品推廣", "month": "8月", "ref_file": ""}}, {"taskName": "2026 狗蔬肉主食罐＋拌飯蔬肉配餐包", "brand": "汪喵", "quarter": "2026Q3", "status": "waiting", "owner": "蘇蘇", "startDate": "", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "新品推廣", "month": "7月", "ref_file": ""}}, {"taskName": "2026 滴雞精餐包（港澳）", "brand": "汪喵", "quarter": "2026Q4", "status": "waiting", "owner": "蘇蘇", "startDate": "", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "產品推廣", "month": "12月", "ref_file": ""}}, {"taskName": "2026 純肉泥", "brand": "汪喵", "quarter": "2026Q1", "status": "cancelled", "owner": "蘇蘇", "startDate": "", "briefDeadline": "", "launchDate": "", "notes": "", "custom": {"collab_type": "產品推廣", "month": "1月", "ref_file": ""}}];
+
+/* 從使用者現有 Notion KOC 名單匯入的初始資料（一次性匯入用，匯入後可在表格中自由編輯/刪除） */
+const SEED_COLLABS = [{"nickname": "午吉&午妮", "account": "@wooji.wooni.cat", "igLink": "https://www.instagram.com/wooji.wooni.cat/", "igFollowers": 22000, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "台北中山\n\n影片美感+呈現方式都很小清新優質\n\n但因為純肉泥事件暫時不太接汪喵，後續因為生活忙，貓草/福箱沒分享，未來可以再聯繫看看!\n\n>>更26.07有來參加寵物展闖關!\n\n❌不太吃餐包", "referrer": "蘇蘇", "pastWorks": "✅https://www.instagram.com/reel/DQ4BLcgkw7F/ / ✅https://www.instagram.com/p/DNw54SCZnLW/", "region": "", "types": ["KOC"], "custom": {"collab_count": "2", "tier": "4⭐影片好 成效差"}}, {"nickname": "66", "account": "@66catmiao", "igLink": "https://www.instagram.com/66catmiao/", "igFollowers": 22000, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "", "notes": "新北汐止", "referrer": "文 凡", "pastWorks": "HM新春任務 / LDN春寵 / 汪喵純肉泥 / HM618", "region": "", "types": ["KOC"], "custom": {"collab_count": "4 UP！", "tier": "5⭐節奏、成效完美"}}, {"nickname": "波波茶", "account": "@iambobox36", "igLink": "https://www.instagram.com/iambobox36/", "igFollowers": 13000, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "台北南港\n很愛吃純肉泥", "referrer": "蘇蘇", "pastWorks": "✅2026純肉泥新口味 / ✅捷運", "region": "", "types": ["KOC"], "custom": {"collab_count": "2", "tier": "5⭐節奏、成效完美"}}, {"nickname": "安東將", "account": "@an_don_biu", "igLink": "https://www.instagram.com/an_don_biu/reels/", "igFollowers": 10000, "threadsFollowers": "", "petType": "狗狗", "quoteMode": "可互惠", "notes": "新竹北區\n互動高", "referrer": "蘇蘇", "pastWorks": "https://www.instagram.com/p/DNw9pmpwsaD/", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "貓奴爬說嘴", "account": "@fuday15cat", "igLink": "https://www.instagram.com/fuday15cat/", "igFollowers": 9100, "threadsFollowers": "", "petType": "狗狗, 貓咪", "quoteMode": "可互惠", "notes": "新北土城\n有長期合作，家裡有貓狗，合作彈性很高，幾乎有發案都會接", "referrer": "蘇蘇", "pastWorks": "✅https://www.instagram.com/p/DN5CdkDktD1/ / ✅https://www.instagram.com/p/DRKKLHiEpl7/ / ✅https://www.instagram.com/p/DSRGUdzEkmk/ / https://www.instagram.com/fuday15cat/reel/DUxi-Rdkmr8/", "region": "", "types": ["KOC"], "custom": {"collab_count": "4 UP！", "tier": "2⭐有成長空間"}}, {"nickname": "奶吉一家", "account": "@naichinekoash", "igLink": "https://www.instagram.com/naichinekoash/reels/", "igFollowers": 8800, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "台南安南\n很喜歡純肉泥 養六隻貓", "referrer": "蘇蘇", "pastWorks": "✅2026純肉泥新口味", "region": "", "types": ["KOC"], "custom": {"collab_count": "2", "tier": "5⭐節奏、成效完美"}}, {"nickname": "三茶花", "account": "@tetecute623", "igLink": "https://www.instagram.com/tetecute623/", "igFollowers": 8700, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "台北中山\n跟汪喵有建立關係，但因為純肉泥異物(推純肉泥)+好市多雞胸肉異物事件(推7-11福箱)，兩次皆主動暫緩，目前暫定不會合作，可再觀察這一季態度~", "referrer": "蘇蘇", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "奶凍捲芝麻糊", "account": "@rollcake0411", "igLink": "https://www.instagram.com/rollcake0411/", "igFollowers": 8000, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "高雄鳳山\n嚴重拖稿 但後來很常曝光汪喵產品原諒他ㄌXD", "referrer": "蘇蘇", "pastWorks": "✅2026純肉泥新口味", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "嚕米", "account": "@lumi_diarys", "igLink": "https://www.instagram.com/lumi_diarys/reels/", "igFollowers": 7800, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "新北樹林", "referrer": "蘇蘇", "pastWorks": "https://www.instagram.com/lumi_diarys/reel/DSFV2pck_6M/ / https://www.instagram.com/lumi_diarys/reel/DU2M_Elk0ia/ / ✅純肉泥新口味 / ✅捷運x夜市", "region": "", "types": ["KOC"], "custom": {"collab_count": "4 UP！", "tier": "2⭐有成長空間"}}, {"nickname": "芙吉", "account": "@fuji._.meow", "igLink": "https://www.instagram.com/fuji._.meow/", "igFollowers": 7300, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "", "notes": "桃園觀音", "referrer": "蘇蘇", "pastWorks": "✅汪喵618", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "蹦迪", "account": "@boomdi_cat", "igLink": "https://www.instagram.com/boomdi_cat/", "igFollowers": 7000, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "", "notes": "彰化二林", "referrer": "文 凡", "pastWorks": "HM春寵 / HM 618", "region": "", "types": ["KOC"], "custom": {"collab_count": "2", "tier": "5⭐節奏、成效完美"}}, {"nickname": "芋圓蛋餅起司", "account": "@yu.yuan_12.05", "igLink": "https://www.instagram.com/yu.yuan_12.05/", "igFollowers": 6900, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "Reels 合作的常態報價大約會落在 NT$1,500～2,500，會依合作需求（是否需腳本、口播、授權等）", "notes": "新北板橋", "referrer": "蘇蘇", "pastWorks": "✅汪喵 618", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "罵丸", "account": "@meatballs0106", "igLink": "https://www.instagram.com/meatballs0106/", "igFollowers": 6700, "threadsFollowers": "", "petType": "狗狗", "quoteMode": "", "notes": "新竹東區", "referrer": "文 凡", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "2", "tier": "5⭐節奏、成效完美"}}, {"nickname": "烏尼", "account": "@uniwei525", "igLink": "https://www.instagram.com/uniwei525/", "igFollowers": 6400, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "新北土城\n影片互動高，影片質感與節奏都很棒", "referrer": "蘇蘇", "pastWorks": "https://www.instagram.com/uniwei525/reel/DUwmj1tkrQq/✅https://www.instagram.com/uniwei525/reel/DU1wCWqkrlT/ / ✅純肉泥新口味 / ✅汪喵春季寵物展", "region": "", "types": ["KOC"], "custom": {"collab_count": "4 UP！", "tier": "5⭐節奏、成效完美"}}, {"nickname": "閃電麻吉", "account": "@107maji", "igLink": "https://www.instagram.com/107maji/", "igFollowers": 6300, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "", "notes": "台中西屯", "referrer": "文 凡", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "莫菲裊", "account": "https://app.notion.com/p/KOC-319a4b7afc88806eac23c22e999ec30c?pvs=21", "igLink": "https://app.notion.com/p/KOC-319a4b7afc88806eac23c22e999ec30c?pvs=21", "igFollowers": 6000, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "新北中和", "referrer": "蘇蘇", "pastWorks": "✅2026純肉泥新口味", "region": "", "types": ["KOC"], "custom": {"collab_count": "2", "tier": "4⭐影片好 成效差"}}, {"nickname": "呆萌", "account": "@diamondthekitten_917", "igLink": "https://www.instagram.com/diamondthekitten_917/", "igFollowers": 5900, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "圖文可互惠，影音一支$3500，廣告主3個月+素材授權", "notes": "嘉義民雄\n有劇情式開箱，下廣續看率不錯~呆萌麻要照顧嫩嬰，業配時間不穩定要留意~拖稿會通知！", "referrer": "蘇蘇", "pastWorks": "https://www.instagram.com/p/DNxXE-Q3pcb/https://www.instagram.com/p/DNxXE-Q3pcb/https://www.instagram.com/p/DNxXE-Q3pcb/https://www.instagram.com/p/DQ38efbks5H/ / ✅https://www.instagram.com/diamondthekitten_917/reel/DUuysndEuhH/", "region": "", "types": ["KOC"], "custom": {"collab_count": "3", "tier": "3⭐影片好 會拖稿"}}, {"nickname": "P & Malu", "account": "@pandmalu", "igLink": "https://www.instagram.com/pandmalu/", "igFollowers": 5600, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "", "notes": "新竹竹北\n有想接團購的意願\n喜歡純肉泥", "referrer": "蘇蘇", "pastWorks": "✅純肉泥新口味", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "島灰", "account": "@daohuiiiii", "igLink": "https://www.instagram.com/daohuiiiii/", "igFollowers": 5500, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "雲林斗六", "referrer": "蘇蘇, 文 凡", "pastWorks": "https://www.instagram.com/p/DXNWJ92z-as/ / ✅2026純肉泥新口味", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "叭哺", "account": "@babu.cat10.5", "igLink": "https://www.instagram.com/babu.cat10.5/", "igFollowers": 5100, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "新手剪片但很努力積極!", "notes": "台北內湖", "referrer": "文 凡", "pastWorks": "✅汪喵618", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "姆咪&娜比", "account": "@moomin.925", "igLink": "https://www.instagram.com/moomin.925/", "igFollowers": 5000, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "台北大安\n寵物展主動現場聯繫，但合作對談起來有點吃力，有點拖稿，可再觀察看看~", "referrer": "蘇蘇", "pastWorks": "https://www.instagram.com/moomin.925/reel/DSUfhbhgdyh/", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "托托", "account": "@yorkiedog_toto", "igLink": "https://www.instagram.com/yorkiedog_toto/", "igFollowers": 4900, "threadsFollowers": "", "petType": "狗狗", "quoteMode": "", "notes": "新北", "referrer": "文 凡", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "阿魯咪", "account": "@azme1313", "igLink": "https://www.instagram.com/azme1313/", "igFollowers": 4700, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "新北淡水", "referrer": "蘇蘇", "pastWorks": "✅2026純肉泥新口味", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "肚仔", "account": "@iamyu_83", "igLink": "https://www.instagram.com/iamyu_83/", "igFollowers": 4400, "threadsFollowers": "", "petType": "人帳", "quoteMode": "", "notes": "台中西區", "referrer": "文 凡", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "MIUMIU", "account": "@_miumiucat_", "igLink": "https://www.instagram.com/_miumiucat_/", "igFollowers": 4200, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "新北板橋\n影片美感好配合度高", "referrer": "蘇蘇", "pastWorks": "https://www.threads.com/@_miumiucat_/post/DNpTZ4jv26P?xmt=AQF0AhOvnaIrbIfOgqnaaNoXeXLgvppdlhy-k8IgxppA2ghttps://www.instagram.com/_miumiucat_/reel/DSJrfePAXtX/https://www.instagram.com/_miumiucat_/reel/DUPbdVsAQMa/ / ✅https://www.instagram.com/_miumiucat_/reel/DUzbDJmgb39/ / ✅純肉泥新口味 / ✅捷運x夜市", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "趴噗闖世界", "account": "@my.cat0410", "igLink": "https://www.instagram.com/my.cat0410/", "igFollowers": 4100, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "新北汐止\n開箱勾子寫的都不錯\n但還沒有合作REELS有機會可嘗試", "referrer": "蘇蘇", "pastWorks": "https://www.threads.com/@my.cat0410/post/DSFFS_3k3iC?xmt=AQF0w7O9t6GDygbxb6NPoP6eAkHpzDxWVyI0udcxRZNyWG4 / ✅捷運x夜市", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "胖虎", "account": "@pangwhoatemyfood", "igLink": "https://www.instagram.com/pangwhoatemyfood/", "igFollowers": 4000, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "高雄楠梓\n起初不太會劇情式開箱，字體美感偏差(會掉字)，但近期有腳本有進步，可以接受你改大幅腳本細節(很上進)不脫稿!!\n\n26/04更新：覺得更新品質沒進步，會先暫緩合作", "referrer": "蘇蘇", "pastWorks": "https://www.instagram.com/pangwhoatemyfood/reel/DPBqiWfAXls/https://www.instagram.com/pangwhoatemyfood/reel/DPBqiWfAXls/https://www.instagram.com/pangwhoatemyfood/reel/DSCSf1wgbZp/https://www.instagram.com/pangwhoatemyfood/reel/DPjN_WEgbkY/https://www.instagram.com/pangwhoatemyfood/reel/DPjN_WEgbkY/✅慢飛兒貓生菜專案REELS / ✅7-11福箱REELS / ✅純肉泥新口味", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "泡哥、妮寶、藤藤", "account": "@kimchi_.hina", "igLink": "https://www.instagram.com/kimchi_.hina/", "igFollowers": 3800, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "台中霧峰\nHM的長期客戶，很健談、配合度高，在寵物通路上班，很喜歡聊天", "referrer": "文 凡", "pastWorks": "✅https://www.instagram.com/p/DTQHbxWD755/", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "咘咘", "account": "@bubu.is.watching", "igLink": "https://www.instagram.com/bubu.is.watching/", "igFollowers": 3700, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "", "notes": "新北淡水", "referrer": "文 凡", "pastWorks": "✅捷運x夜市", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "暖暖", "account": "@miss.nuan0915", "igLink": "https://www.instagram.com/miss.nuan0915/", "igFollowers": 3300, "threadsFollowers": "", "petType": "狗狗", "quoteMode": "可互惠", "notes": "台中南屯\n雖然只合作過圖文，但看版面上其他作品都不錯~", "referrer": "蘇蘇", "pastWorks": "https://www.threads.com/@miss.nuan0915/post/DRMSBVoEa-H?xmt=AQF0TILuTWSIZ9HQgmWEME7neuAVbnLa6a0vqUX5ynFj1gAD819y2ulaLhByIN36EcoZeyGt&slof=1", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "米米・妹妹・棉棉", "account": "@meimei22065", "igLink": "https://www.instagram.com/meimei22065/", "igFollowers": 3000, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "桃園桃園區\n不太會有劇情式開箱，字體美感偏差(會掉字)，但近期有腳本有進步~\n\n26/04更新：覺得更新品質沒進步＋開始要授權費，會先暫緩合作", "referrer": "蘇蘇", "pastWorks": "https://www.instagram.com/meimei22065/reel/DN0CEKn4uUQ/https://www.instagram.com/meimei22065/reel/DN0CEKn4uUQ/https://www.instagram.com/meimei22065/reel/DSCj_v2kfqd/https://www.instagram.com/p/DT1rvmGkZM1/https://www.instagram.com/meimei22065/reel/DP3XalDkVfP/https://www.instagram.com/meimei22065/reel/DP3XalDkVfP/https://www.instagram.com/p/DUSK4QwkWHu/https://www.instagram.com/meimei22065/reel/DUw8VX9kQqk/", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "米芙", "account": "http://mifu.cat", "igLink": "http://mifu.cat", "igFollowers": 3000, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "", "notes": "新北土城", "referrer": "蘇蘇", "pastWorks": "日日茶香米粒砂 / ✅捷運x夜市", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "茱蒂九淘", "account": "@judy.rock0325", "igLink": "https://www.instagram.com/judy.rock0325/", "igFollowers": 2900, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "", "notes": "新北汐止", "referrer": "文 凡", "pastWorks": "HM新春任務 / LDN春寵", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "咪咪&嘿嘿", "account": "@mimi.hey_neko", "igLink": "https://www.instagram.com/mimi.hey_neko/", "igFollowers": 2800, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "彰化秀水\n呈現方式很精緻，但畫面會偏單調", "referrer": "蘇蘇", "pastWorks": "https://www.instagram.com/mimi.hey_neko/reel/DSHpDZfCX97/", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "麥麥", "account": "@cat.maimai", "igLink": "https://www.instagram.com/cat.maimai/", "igFollowers": 2700, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "台北萬華會寫劇本的，好討論", "referrer": "蘇蘇", "pastWorks": "https://www.instagram.com/cat.maimai/reel/DSNEVH0kwhU/ / https://www.instagram.com/reel/DSNEVH0kwhU/https://www.instagram.com/peiii.yun/reel/DN9pRcHEwHj/ / https://www.instagram.com/cat.maimai/reel/DUyLtBGk0pW/ / ✅捷運x夜市 / ✅純肉泥新口味", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "歐比", "account": "@obi.tw.com0425", "igLink": "https://www.instagram.com/obi.tw.com0425/reels/", "igFollowers": 2700, "threadsFollowers": "", "petType": "狗狗", "quoteMode": "可互惠", "notes": "台北大安\n雖然只合作過圖文，但看版面上其他作品都不錯~", "referrer": "蘇蘇", "pastWorks": "https://www.threads.com/@obi.tw.com0425/post/DRMot2skw-E?xmt=AQF0MtpWfFeA7oEJDjjl5UUZU9-diMn8g2CPy-QIcV90no0J0ukkDOlAMZvXir_SPIIG_d7c&slof=1", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "黃福實", "account": "@fushi_0731", "igLink": "https://www.instagram.com/fushi_0731/", "igFollowers": 2700, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "台北南港\n日常影片流量不錯\n溝通很有禮貌", "referrer": "蘇蘇", "pastWorks": "✅2026純肉泥新口味", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "哈醬&蜜醬", "account": "@hami211015", "igLink": "https://www.instagram.com/hami211015/", "igFollowers": 2600, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠\n肉球世界行銷，會刺探敵情:)", "notes": "台北內湖", "referrer": "蘇蘇", "pastWorks": "7-11福箱", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "小投", "account": "@toutou23_5", "igLink": "https://www.instagram.com/toutou23_5/", "igFollowers": 2600, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "", "notes": "高雄左營\n影片節奏抓得不錯！", "referrer": "文 凡", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "虎寶&橘寶", "account": "@double_cat_love", "igLink": "https://www.instagram.com/double_cat_love/", "igFollowers": 2400, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "", "notes": "高雄鳳山\n有填超凝品牌大使", "referrer": "文 凡", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "1", "tier": "1⭐影片完整"}}, {"nickname": "嚕咪", "account": "@pomloomi", "igLink": "https://www.instagram.com/pomloomi/", "igFollowers": 2400, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "", "notes": "新北板橋", "referrer": "文 凡", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "1", "tier": "1⭐影片完整"}}, {"nickname": "氣泡女孩", "account": "@bubble_girl0327", "igLink": "https://www.instagram.com/bubble_girl0327/reels/", "igFollowers": 2300, "threadsFollowers": "", "petType": "人帳, 貓咪", "quoteMode": "可互惠", "notes": "非貓帳，但會述說故事", "referrer": "蘇蘇", "pastWorks": "https://www.instagram.com/bubble_girl0327/reel/DPqTHMOkmyX/ / https://www.instagram.com/bubble_girl0327/reel/DNsVvUCZC73/", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "吉雄", "account": "@polarbear__0208", "igLink": "https://www.instagram.com/polarbear__0208/", "igFollowers": 2300, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "會不審稿就上線\n需要注意!", "notes": "新北板橋", "referrer": "文 凡", "pastWorks": "HM每日肉泥 / HM拌飯晶球 / 日日茶香米粒砂", "region": "", "types": ["KOC"], "custom": {"collab_count": "3", "tier": "2⭐有成長空間"}}, {"nickname": "羊咩咩", "account": "@minipin_sheep", "igLink": "https://www.instagram.com/minipin_sheep/", "igFollowers": 2200, "threadsFollowers": "", "petType": "狗狗", "quoteMode": "可互惠", "notes": "互動還行", "referrer": "蘇蘇", "pastWorks": "https://www.instagram.com/p/DNu1u383v5u/", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "奶球&Uni&奶茶", "account": "@creamer.uni.milktea", "igLink": "https://www.instagram.com/creamer.uni.milktea?igsh=cmNwM2lpZGdqN3Y1", "igFollowers": 2100, "threadsFollowers": "", "petType": "狗狗, 貓咪", "quoteMode": "可互惠", "notes": "新北三重\n剪輯節奏還不錯\n配合度高、喜歡抽獎", "referrer": "蘇蘇, 文 凡", "pastWorks": "https://app.notion.com/p/2e2a4b7afc8880519ba4fe1fc0318936?pvs=21 / https://www.instagram.com/creamer.uni.milktea/reel/DVJH1_nk3UO/ / https://www.instagram.com/p/DTFwaYuEw_P/?img_index=4 / ✅捷運x夜市 / ✅純肉泥新口味", "region": "", "types": ["KOC"], "custom": {"collab_count": "4 UP！", "tier": "2⭐有成長空間"}}, {"nickname": "咪醬＆醬醬", "account": "@milujiang_", "igLink": "https://www.instagram.com/milujiang_/", "igFollowers": 2100, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "", "notes": "新竹竹東", "referrer": "蘇蘇", "pastWorks": "日日茶香米粒砂", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "DIDI", "account": "@didi_20250527", "igLink": "https://www.instagram.com/didi_20250527/", "igFollowers": 2000, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "台中沙鹿\n新建立關係\n\n*貓咪有IBD，要注意飲食狀況", "referrer": "蘇蘇", "pastWorks": "✅日日茶香米粒沙 / ✅純肉泥新口味", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "噗哩&咕哩", "account": "@pulipuuuuu", "igLink": "https://www.instagram.com/pulipuuuuu/", "igFollowers": 2000, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "新建立關係", "referrer": "蘇蘇", "pastWorks": "https://www.instagram.com/pulipuuuuu/reel/DUXxgJFgaMP/", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "茶茶&茶米", "account": "@deiiiii._____", "igLink": "https://www.instagram.com/deiiiii._____/reels/", "igFollowers": 2000, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "美感腳本可以，但互動率差\n日日貓砂合作不回訊息", "referrer": "蘇蘇", "pastWorks": "https://www.instagram.com/reel/DSOfEyVkveO/ / ✅日日茶香米粒沙", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "阿財", "account": "@a_zai.daily", "igLink": "https://www.instagram.com/a_zai.daily/", "igFollowers": 3700, "threadsFollowers": "", "petType": "狗狗", "quoteMode": "可互惠", "notes": "", "referrer": "文 凡", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "2", "tier": "5⭐節奏、成效完美"}}, {"nickname": "糖心蛋", "account": "@sandra.tr_ma", "igLink": "https://www.instagram.com/sandra.tr_ma/", "igFollowers": 3100, "threadsFollowers": "", "petType": "人帳, 貓咪", "quoteMode": "可互惠", "notes": "影片節奏很讚", "referrer": "文 凡", "pastWorks": "✅https://www.instagram.com/p/Dae9a6PpVdm/", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "MGC", "account": "@mgc._2011", "igLink": "https://www.instagram.com/mgc._2011/", "igFollowers": 1100, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "", "referrer": "蘇蘇", "pastWorks": "✅https://www.instagram.com/p/DSRoj53j5HF/", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "燒燒兄弟", "account": "@yakibros.daily", "igLink": "https://www.instagram.com/yakibros.daily/", "igFollowers": 12000, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "", "referrer": "蘇蘇", "pastWorks": "✅純肉泥捷運", "region": "", "types": ["KOC"], "custom": {"collab_count": "2", "tier": ""}}, {"nickname": "脆脆", "account": "@crunchy_meow_", "igLink": "https://www.instagram.com/crunchy_meow_/", "igFollowers": 1900, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "新北林口 \n沒什麼在經營ㄌQQ", "referrer": "蘇蘇", "pastWorks": "https://www.instagram.com/crunchy_meow_/reel/DRMA3L-gVdh/ / https://www.instagram.com/crunchy_meow_/reel/DOx-eidEaIr/", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "北藤貴", "account": "@beitenggui", "igLink": "https://www.instagram.com/beitenggui/", "igFollowers": 1900, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "", "notes": "新北淡水", "referrer": "文 凡", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "LOKI", "account": "@loki.purrince", "igLink": "https://www.instagram.com/loki.purrince/", "igFollowers": 1800, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "", "notes": "台北松山", "referrer": "蘇蘇", "pastWorks": "汪喵618", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "U奔", "account": "@uubencat", "igLink": "https://www.instagram.com/uubencat/", "igFollowers": 1700, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "台北北投\n長期合作，合作態度很好，私下偶爾會聊天~拍攝方式偏時尚文青感，喜歡公益類議題", "referrer": "蘇蘇", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "姆姆&姆姊", "account": "@moomoo.lh", "igLink": "https://www.instagram.com/moomoo.lh/", "igFollowers": 1700, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "台北中山\n新建立關係", "referrer": "蘇蘇", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "福寶", "account": "@fubaokitty", "igLink": "https://www.instagram.com/fubaokitty/", "igFollowers": 1700, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "台北文山\n貓腸胃不好不太接食品類\n貓砂可以(但不喜有香味)\n喜歡公益活動，慢飛兒有主動邀約爭取!私下互動很讚~", "referrer": "蘇蘇", "pastWorks": "日日茶香米粒砂 / 慢飛兒貓草盒", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "tara&wilson", "account": "@tara_wilson_2023", "igLink": "https://www.instagram.com/tara_wilson_2023/", "igFollowers": 1700, "threadsFollowers": "", "petType": "狗狗", "quoteMode": "有兩個小編幫忙剪片", "notes": "未知待補", "referrer": "文 凡", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "木耳", "account": "@hey_mooear", "igLink": "https://www.instagram.com/hey_mooear/", "igFollowers": 1700, "threadsFollowers": "", "petType": "狗狗", "quoteMode": "", "notes": "新北淡水", "referrer": "文 凡", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "小月", "account": "@stray_._cat", "igLink": "https://www.instagram.com/stray_._cat/", "igFollowers": 1600, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "", "notes": "台北松山", "referrer": "文 凡", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "雙茶貓", "account": "@gawgaw9527", "igLink": "https://www.instagram.com/gawgaw9527/", "igFollowers": 1500, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "", "notes": "新北新店", "referrer": "文 凡", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "葉庫奇", "account": "@kookie0321_corgi", "igLink": "https://www.instagram.com/kookie0321_corgi/", "igFollowers": 1400, "threadsFollowers": "", "petType": "狗狗", "quoteMode": "可互惠", "notes": "高雄小港\n劇情感好", "referrer": "蘇蘇", "pastWorks": "https://www.instagram.com/p/DRPGK-JE1e1/", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "虧雞媽媽", "account": "@kueichimama", "igLink": "https://www.instagram.com/kueichimama/", "igFollowers": 1400, "threadsFollowers": "", "petType": "人帳", "quoteMode": "", "notes": "未知待補", "referrer": "文 凡", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "八弟&八咘", "account": "@buddy.bob_cat", "igLink": "https://www.instagram.com/buddy.bob_cat/", "igFollowers": 1300, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "台北文山", "referrer": "蘇蘇", "pastWorks": "https://www.threads.com/@buddy.bob_cat/post/DSHvi_HkYaA?xmt=AQF0tGKAYpQndbH3kXZpCsLLi-gli5gUXcObiqFXs1zmZ7p1nJQXOEfGxdP7jl05GKUiQzcV&slof=1", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "三惡犬與二貓黨", "account": "@iiuao.o", "igLink": "https://www.instagram.com/iiuao.o/", "igFollowers": 1300, "threadsFollowers": "", "petType": "狗狗, 貓咪", "quoteMode": "", "notes": "新北土城\n品質超好!!!!!!!!", "referrer": "蘇蘇", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "GEDA", "account": "@geda_____", "igLink": "https://www.instagram.com/geda_____/", "igFollowers": 1300, "threadsFollowers": "", "petType": "狗狗", "quoteMode": "", "notes": "台中西區", "referrer": "文 凡", "pastWorks": "HM夏寵618", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "瑪吉&憨吉&泰吉", "account": "@majii._.hanjii", "igLink": "https://www.instagram.com/majii._.hanjii/", "igFollowers": 1200, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "圖文商品價值要超過$1000，可供5張以上素材+1則以上限動+200字心得\n\nREELS商品價值需超過$2000，可供60秒影片+1則以上限動+200字心得\n\n可以異動，好討論~https://www.canva.com/design/DAG17DpZiLE/wJ2TKLa5YrAaPC-MnfnDwQ/view?utm_content=DAG17DpZiLE&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h19f0b7c51c", "notes": "宜蘭\n新建立關係", "referrer": "蘇蘇", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "嚕以", "account": "@louis_life_bd", "igLink": "https://www.instagram.com/louis_life_bd/", "igFollowers": 1200, "threadsFollowers": "", "petType": "狗狗", "quoteMode": "可互惠", "notes": "新北三重\n網紅經營，溝通很良好，劇情不錯", "referrer": "蘇蘇", "pastWorks": "https://app.notion.com/p/2e2a4b7afc8880519ba4fe1fc0318936?pvs=21", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "麻糬", "account": "@baby.mochicat", "igLink": "https://www.instagram.com/baby.mochicat/", "igFollowers": 1100, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "新竹北區\n新建立關係", "referrer": "蘇蘇", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "饅頭&海苔&烏尼", "account": "@mantoe_noli", "igLink": "https://www.instagram.com/mantoe_noli/", "igFollowers": 1000, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "台中西區\n劇情腳本好，保健肉泥廣告效果不錯!", "referrer": "蘇蘇", "pastWorks": "https://www.instagram.com/mantoe_noli/https://www.instagram.com/mantoe_noli/", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "歐咪醬", "account": "@heii.omi_thecat", "igLink": "https://www.instagram.com/heii.omi_thecat/", "igFollowers": 900, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "", "notes": "新北三重", "referrer": "文 凡", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "沐尼&雪泥", "account": "@muni.xueni", "igLink": "https://www.instagram.com/muni.xueni/", "igFollowers": 800, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "台中豐原\n有腳本劇本概念，但還不夠生動，可以繼續培養", "referrer": "蘇蘇", "pastWorks": "https://www.instagram.com/reel/DSRacVbk9UU/", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "瑞曲勾登", "account": "@richgolden_", "igLink": "https://www.instagram.com/richgolden_/", "igFollowers": 800, "threadsFollowers": "", "petType": "狗狗", "quoteMode": "可互惠", "notes": "劇情感好會做實驗效果\n*轉CRM小新星", "referrer": "蘇蘇", "pastWorks": "https://www.instagram.com/richgolden_/reel/DROzl9zkfMe/", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "嚕嚕", "account": "@lulu_cat1031", "igLink": "https://www.instagram.com/lulu_cat1031/", "igFollowers": 800, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "", "notes": "新北中和", "referrer": "文 凡", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "烏米", "account": "@umiqlo_tw", "igLink": "https://www.instagram.com/umiqlo_tw/", "igFollowers": 800, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "", "notes": "宜蘭羅東", "referrer": "文 凡", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "奇異果貓與蘿蔔貓", "account": "@7bcat.huban", "igLink": "https://www.instagram.com/7bcat.huban/", "igFollowers": 700, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "", "notes": "高雄楠梓", "referrer": "文 凡", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "Huge", "account": "@hugediudiu", "igLink": "https://www.instagram.com/hugediudiu/reels/", "igFollowers": 590, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "新北汐止\n美感劇情不錯但粉絲數低，可以再培養一陣子~", "referrer": "蘇蘇", "pastWorks": "https://www.instagram.com/reel/DSUP9CgE7Zd/", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "黑糖麻糬", "account": "@brownsugarmochi_ragdoll", "igLink": "https://www.instagram.com/brownsugarmochi_ragdoll/", "igFollowers": 400, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "", "notes": "桃園大園", "referrer": "文 凡", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "咪拎本丸", "account": "@_milin2_", "igLink": "https://www.instagram.com/_milin2_/", "igFollowers": 300, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "", "notes": "苗栗竹南", "referrer": "文 凡", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "米粒", "account": "@milly_inthehouse", "igLink": "https://www.instagram.com/milly_inthehouse/", "igFollowers": 63, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "", "notes": "台北南港", "referrer": "文 凡", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "Q米", "account": "@qmee_ragdoll", "igLink": "https://www.instagram.com/qmee_ragdoll/", "igFollowers": 60, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "新北新店\n麻麻是廣告投手 很懂剪輯", "referrer": "蘇蘇", "pastWorks": "https://www.instagram.com/qmee_ragdoll/reel/DSZ6WgriX9f/ / https://www.instagram.com/qmee_ragdoll/reel/DNx1gMfUpkW/ / https://www.instagram.com/qmee_ragdoll/reel/DQZHMuJiZgq/", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "Cobe", "account": "@cobe__0901", "igLink": "https://www.instagram.com/cobe__0901/reels/", "igFollowers": 30, "threadsFollowers": "", "petType": "狗狗", "quoteMode": "可互惠", "notes": "有剪輯美感但沒劇情，未來合作可溝通", "referrer": "蘇蘇", "pastWorks": "https://www.instagram.com/cobe__0901/reel/DNkiSgbS_FV/", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "Hangi&Mumu", "account": "@hangimumu", "igLink": "https://www.instagram.com/hangimumu/", "igFollowers": 20, "threadsFollowers": "", "petType": "狗狗", "quoteMode": "可互惠", "notes": "新竹北區\n會做實驗效果，但剪輯節奏要溝通協助調整", "referrer": "蘇蘇", "pastWorks": "https://www.instagram.com/richgolden_/reel/DROzl9zkfMe/", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "米米", "account": "@_miimii.cat_0812", "igLink": "https://www.instagram.com/_miimii.cat_0812/", "igFollowers": 8900, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "台北信義超好溝通 學習剪片中 呈現還可以", "referrer": "文 凡", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}, {"nickname": "咪嚕咪醬", "account": "@miru__0405", "igLink": "https://www.instagram.com/miru__0405/", "igFollowers": 6200, "threadsFollowers": "", "petType": "貓咪", "quoteMode": "可互惠", "notes": "問題有點多 合作須注意說詞", "referrer": "蘇蘇", "pastWorks": "", "region": "", "types": ["KOC"], "custom": {"collab_count": "", "tier": ""}}];
+
+let cfg = {
+  statuses: JSON.parse(JSON.stringify(DEFAULT_STATUSES)),
+  brands: [...DEFAULT_BRANDS],
+  projectFields: [],      // {id,label,type:'text'|'number'|'date'|'select', options?:[]}
+  collabFields: [],
+};
+let projects = [];       // project records
+let collabs = [];        // collaborator records
+let currentTab = 'projects';
+let loaded = false;
+
+function uid(){ return 'id_'+Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+
+async function loadAll(){
+  try{
+    const c = await window.storage.get('app-config', true);
+    if(c && c.value) cfg = Object.assign(cfg, JSON.parse(c.value));
+  }catch(e){}
+  try{
+    const p = await window.storage.get('projects-data', true);
+    if(p && p.value) projects = JSON.parse(p.value);
+  }catch(e){}
+  try{
+    const cl = await window.storage.get('collaborators-data', true);
+    if(cl && cl.value) collabs = JSON.parse(cl.value);
+  }catch(e){}
+  loaded = true;
+  render();
+}
+
+let saveTimers = {};
+function saveKey(key, value){
+  clearTimeout(saveTimers[key]);
+  saveTimers[key] = setTimeout(async ()=>{
+    try{ await window.storage.set(key, JSON.stringify(value), true); }catch(e){ showToast('儲存失敗，請檢查網路連線'); }
+  }, 250);
+}
+function saveConfig(){ saveKey('app-config', cfg); }
+function saveProjects(){ saveKey('projects-data', projects); }
+function saveCollabs(){ saveKey('collaborators-data', collabs); }
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+/* ============================= 小工具 ============================= */
+function statusOf(id){ return cfg.statuses.find(s=>s.id===id) || cfg.statuses[0]; }
+function contrastText(hex){
+  hex = (hex||'#888888').replace('#','');
+  if(hex.length===3) hex = hex.split('').map(c=>c+c).join('');
+  const r=parseInt(hex.substr(0,2),16), g=parseInt(hex.substr(2,2),16), b=parseInt(hex.substr(4,2),16);
+  const lum = (0.299*r+0.587*g+0.114*b)/255;
+  return lum > 0.62 ? '#232B26' : '#FFFFFF';
+}
+function hexToRgba(hex, a){
+  hex = (hex||'#888888').replace('#','');
+  if(hex.length===3) hex = hex.split('').map(c=>c+c).join('');
+  const r=parseInt(hex.substr(0,2),16), g=parseInt(hex.substr(2,2),16), b=parseInt(hex.substr(4,2),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+function typeTagHtml(t, active, id){
+  const color = TYPE_COLORS[t] || '#5E7873';
+  const style = active ? `background:${hexToRgba(color,.16)};color:${color};` : '';
+  return `<span class="tag ${active?'':'off'}" style="${style}" data-action="toggleType" data-type="${esc(t)}" data-id="${esc(id)}">${esc(t)}</span>`;
+}
+function typeBadgesHtml(types){
+  return (types||[]).map(t=>{
+    const color = TYPE_COLORS[t] || '#5E7873';
+    return `<span class="tag" style="background:${hexToRgba(color,.16)};color:${color};">${esc(t)}</span>`;
+  }).join('') || `<span class="tag off">未設定</span>`;
+}
+function quarterOptions(){
+  const opts = [];
+  for(let y=2024;y<=2028;y++){
+    for(let q=1;q<=4;q++) opts.push(`${y}Q${q}`);
+  }
+  return opts;
+}
+function esc(s){ return (s===undefined||s===null)?'':String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtFollowers(n){
+  n = Number(n||0);
+  if(!n) return '—';
+  if(n>=10000) return (n/10000).toFixed(n%10000===0?0:1)+'萬';
+  return n.toLocaleString();
+}
+
+/* ============================= 導覽 ============================= */
+document.getElementById('nav').addEventListener('click', e=>{
+  const btn = e.target.closest('button[data-tab]');
+  if(!btn) return;
+  currentTab = btn.dataset.tab;
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active', b===btn));
+  render();
+});
+
+function render(){
+  if(!loaded) return;
+  const content = document.getElementById('content');
+  if(currentTab==='projects') content.innerHTML = renderProjects();
+  else if(currentTab==='collabs') content.innerHTML = renderCollabs();
+  else content.innerHTML = renderSettings();
+  bindDynamic();
+}
+
+/* ============================= 專案 / 檔期排程 ============================= */
+function newProject(partial){
+  return Object.assign({
+    id: uid(), taskName:'', brand: cfg.brands[0]||'', quarter: '2026Q1', status: cfg.statuses[0].id,
+    owner:'', startDate:'', briefDeadline:'', launchDate:'', notes:'', rowColor:'', assignedKOCs: [], custom:{}
+  }, partial||{});
+}
+
+function importSeedProjects(){
+  if(!SEED_PROJECTS.length){ showToast('沒有可匯入的資料'); return; }
+  const needed = [
+    {id:'collab_type', label:'合作類型', type:'select', options:['產品推廣','新品推廣','活動檔期 / 銷售','公益活動','線下活動','常態推廣']},
+    {id:'month', label:'月份', type:'text'},
+    {id:'ref_file', label:'參考檔案', type:'text'},
+  ];
+  needed.forEach(n=>{
+    if(!cfg.projectFields.some(f=>f.id===n.id)) cfg.projectFields.push(n);
+  });
+  const existingNames = new Set(projects.map(p=>(p.taskName||'').toLowerCase()).filter(Boolean));
+  let added = 0, skipped = 0;
+  SEED_PROJECTS.forEach(s=>{
+    const key = (s.taskName||'').toLowerCase();
+    if(key && existingNames.has(key)){ skipped++; return; }
+    const p = newProject({
+      taskName: s.taskName, brand: s.brand, quarter: s.quarter, status: s.status,
+      owner: s.owner, startDate: s.startDate, briefDeadline: s.briefDeadline, launchDate: s.launchDate,
+      notes: s.notes, custom: s.custom,
+    });
+    projects.push(p);
+    existingNames.add(key);
+    added++;
+  });
+  saveConfig(); saveProjects(); render();
+  showToast(`已匯入 ${added} 筆任務，略過重複 ${skipped} 筆`);
+}
+
+function renderProjects(){
+  const rows = projects.map(p=>projectRowHtml(p)).join('');
+  const customHeads = cfg.projectFields.map(f=>`<th>${esc(f.label)}</th>`).join('');
+  return `
+  <div class="panel">
+    <div class="panel-head">
+      <h3>專案檔期一覽</h3>
+      <span class="sub">共 ${projects.length} 個專案</span>
+      <div class="spacer"></div>
+      ${SEED_PROJECTS.length ? `<button class="btn" id="btnImportProjects">📥 匯入現有任務（${SEED_PROJECTS.length} 筆）</button>` : ''}
+      <button class="btn" id="btnAddRowInline">＋ 新增列（表格內直接填寫）</button>
+      <button class="btn accent" id="btnAddProjectForm">＋ 以表單新增專案</button>
+    </div>
+    <div class="panel-body">
+      <div class="tbl-wrap">
+        <table class="data">
+          <thead><tr>
+            <th style="width:6px"></th>
+            <th style="min-width:120px">狀態</th>
+            <th style="min-width:160px">任務名稱</th>
+            <th>品牌</th>
+            <th>專案季度</th>
+            <th>負責人</th>
+            <th>啟動時間</th>
+            <th>最晚Brief</th>
+            <th>上線時間</th>
+            <th style="min-width:120px">指派KOC</th>
+            <th style="min-width:150px">備註</th>
+            ${customHeads}
+            <th></th>
+          </tr></thead>
+          <tbody id="projTbody">
+            ${rows || `<tr><td colspan="20"><div class="empty"><div class="big">📋</div>目前沒有專案，點右上角新增第一筆檔期。</div></td></tr>`}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+function projectRowHtml(p){
+  const st = statusOf(p.status);
+  const barColor = p.rowColor || st.color;
+  const statusOptsHtml = cfg.statuses.map(s=>`<option value="${s.id}" ${s.id===p.status?'selected':''}>${esc(s.label)}</option>`).join('');
+  const brandOptsHtml = cfg.brands.map(b=>`<option value="${esc(b)}" ${b===p.brand?'selected':''}>${esc(b)}</option>`).join('');
+  const qOptsHtml = quarterOptions().map(q=>`<option value="${q}" ${q===p.quarter?'selected':''}>${q}</option>`).join('');
+  const customCells = cfg.projectFields.map(f=>customCellHtml(p, f)).join('');
+  return `
+  <tr data-id="${p.id}" data-kind="project">
+    <td class="accent-bar"><div style="background:${esc(barColor)}"></div></td>
+    <td>
+      <select class="status-select cell-input" data-field="status" style="background:${hexToRgba(st.color,.16)}; color:${st.color}; font-weight:700;">${statusOptsHtml}</select>
+    </td>
+    <td><input class="cell-input" data-field="taskName" value="${esc(p.taskName)}" placeholder="任務名稱" style="cursor:pointer;" title="點一下編輯，或按「指派KOC」管理內容"></td>
+    <td><select class="cell-input" data-field="brand">${brandOptsHtml}</select></td>
+    <td><select class="cell-input" data-field="quarter">${qOptsHtml}</select></td>
+    <td><input class="cell-input" data-field="owner" value="${esc(p.owner)}" placeholder="負責人"></td>
+    <td><input type="date" class="cell-input" data-field="startDate" value="${esc(p.startDate)}"></td>
+    <td><input type="date" class="cell-input" data-field="briefDeadline" value="${esc(p.briefDeadline)}"></td>
+    <td><input type="date" class="cell-input" data-field="launchDate" value="${esc(p.launchDate)}"></td>
+    <td><button class="count-pill" data-action="assign" data-id="${p.id}">👥 ${p.assignedKOCs.length} 位</button></td>
+    <td><input class="cell-input" data-field="notes" value="${esc(p.notes)}" placeholder="備註"></td>
+    ${customCells}
+    <td>
+      <div class="row-color-cell">
+        <input type="color" class="tiny" data-field="rowColor" value="${p.rowColor || st.color}" title="手動指定色塊顏色">
+        ${p.rowColor?`<button class="clear-color" data-action="clearColor" data-id="${p.id}" title="改回跟隨狀態顏色">↺</button>`:''}
+        <button class="del-btn" data-action="delProject" data-id="${p.id}" title="刪除">✕</button>
+      </div>
+    </td>
+  </tr>`;
+}
+
+function customCellHtml(rec, f){
+  const val = (rec.custom && rec.custom[f.id]!==undefined) ? rec.custom[f.id] : '';
+  if(f.type==='select'){
+    const opts = (f.options||[]).map(o=>`<option value="${esc(o)}" ${o===val?'selected':''}>${esc(o)}</option>`).join('');
+    return `<td><select class="cell-input" data-custom="${f.id}"><option value=""></option>${opts}</select></td>`;
+  }
+  if(f.type==='date') return `<td><input type="date" class="cell-input" data-custom="${f.id}" value="${esc(val)}"></td>`;
+  if(f.type==='number') return `<td><input type="number" class="cell-input" data-custom="${f.id}" value="${esc(val)}"></td>`;
+  return `<td><input class="cell-input" data-custom="${f.id}" value="${esc(val)}"></td>`;
+}
+
+/* ============================= 合作名單 ============================= */
+function newCollab(partial){
+  return Object.assign({
+    id: uid(), nickname:'', account:'', igLink:'', igFollowers:'', igFollowersUpdatedAt:'', threadsFollowers:'', petType:'',
+    quoteMode:'', notes:'', referrer:'', pastWorks:'', region:'', types:[], custom:{}
+  }, partial||{});
+}
+function daysSince(dateStr){
+  if(!dateStr) return null;
+  const d = new Date(dateStr+'T00:00:00');
+  if(isNaN(d)) return null;
+  return Math.floor((Date.now()-d.getTime())/86400000);
+}
+function freshnessHtml(dateStr){
+  const days = daysSince(dateStr);
+  if(days===null) return `<span style="font-size:10px;color:var(--ink-soft);">尚未更新</span>`;
+  let color = '#4C8A4F', label = `${days}天前更新`;
+  if(days>90){ color='#B5493D'; label = `${days}天未更新`; }
+  else if(days>30){ color='#C97A2E'; label = `${days}天前更新`; }
+  if(days===0) label = '今天已更新';
+  return `<span style="font-size:10px;color:${color};font-weight:600;">${label}</span>`;
+}
+
+function renderCollabs(){
+  const rows = collabs.map(c=>collabRowHtml(c)).join('');
+  const customHeads = cfg.collabFields.map(f=>`<th>${esc(f.label)}</th>`).join('');
+  return `
+  <div class="panel">
+    <div class="panel-head">
+      <h3>合作名單（KOC / 素人 統一資料庫）</h3>
+      <span class="sub">共 ${collabs.length} 筆・以「身份」標籤區分 KOC／汪喵素人／HM素人／超凝素人，同一人不需重複建檔</span>
+      <div class="spacer"></div>
+      ${SEED_COLLABS.length ? `<button class="btn" id="btnImportSeed">📥 匯入現有名單（${SEED_COLLABS.length} 筆）</button>` : ''}
+      <button class="btn" id="btnAddCollabInline">＋ 新增列（表格內直接填寫）</button>
+      <button class="btn accent" id="btnAddCollabForm">＋ 以表單新增</button>
+    </div>
+    <div class="panel-body">
+      <div class="tbl-wrap">
+        <table class="data">
+          <thead><tr>
+            <th style="min-width:190px">身份</th>
+            <th style="min-width:110px">稱呼</th>
+            <th style="min-width:130px">帳號名</th>
+            <th style="min-width:60px">IG連結</th>
+            <th style="min-width:100px">IG粉絲數</th>
+            <th>Threads粉絲數</th>
+            <th>寵物種類</th>
+            <th style="min-width:130px">報價/合作模式</th>
+            <th>推薦人</th>
+            <th style="min-width:150px">合作作品</th>
+            <th>地區</th>
+            <th style="min-width:150px">備註</th>
+            ${customHeads}
+            <th></th>
+          </tr></thead>
+          <tbody id="collabTbody">
+            ${rows || `<tr><td colspan="20"><div class="empty"><div class="big">🐾</div>尚無合作名單，點右上角新增第一筆資料。</div></td></tr>`}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+function collabRowHtml(c){
+  const customCells = cfg.collabFields.map(f=>customCellHtml(c, f)).join('');
+  const tagsHtml = TYPE_OPTIONS.map(t=>typeTagHtml(t, c.types.includes(t), c.id)).join('');
+  return `
+  <tr data-id="${c.id}" data-kind="collab">
+    <td><div class="type-tags">${tagsHtml}</div></td>
+    <td><input class="cell-input" data-field="nickname" value="${esc(c.nickname)}" placeholder="稱呼"></td>
+    <td><input class="cell-input" data-field="account" value="${esc(c.account)}" placeholder="@帳號"></td>
+    <td>
+      <div style="display:flex;align-items:center;gap:2px;">
+        <input class="cell-input" data-field="igLink" value="${esc(c.igLink)}" placeholder="貼上IG連結" style="min-width:60px;">
+        ${c.igLink ? `<a href="${esc(c.igLink)}" target="_blank" rel="noopener" title="開啟 IG 頁面" style="text-decoration:none;font-size:14px;flex:none;">🔗</a>` : ''}
+      </div>
+    </td>
+    <td>
+      <input type="number" class="cell-input" data-field="igFollowers" value="${esc(c.igFollowers)}" placeholder="0">
+      <div style="padding:0 7px;">${freshnessHtml(c.igFollowersUpdatedAt)}</div>
+    </td>
+    <td><input type="number" class="cell-input" data-field="threadsFollowers" value="${esc(c.threadsFollowers)}" placeholder="0"></td>
+    <td><input class="cell-input" data-field="petType" value="${esc(c.petType)}" placeholder="貓／狗…"></td>
+    <td><input class="cell-input" data-field="quoteMode" value="${esc(c.quoteMode)}" placeholder="現金/寄贈…"></td>
+    <td><input class="cell-input" data-field="referrer" value="${esc(c.referrer)}" placeholder="推薦人"></td>
+    <td><input class="cell-input" data-field="pastWorks" value="${esc(c.pastWorks)}" placeholder="過往合作作品"></td>
+    <td><input class="cell-input" data-field="region" value="${esc(c.region)}" placeholder="地區"></td>
+    <td><input class="cell-input" data-field="notes" value="${esc(c.notes)}" placeholder="備註"></td>
+    ${customCells}
+    <td>
+      <button class="btn sm ghost" data-action="viewHistory" data-id="${c.id}" title="查看合作紀錄">🕘</button>
+      <button class="del-btn" data-action="delCollab" data-id="${c.id}" title="刪除">✕</button>
+    </td>
+  </tr>`;
+}
+
+function importSeedCollabs(){
+  if(!SEED_COLLABS.length){ showToast('沒有可匯入的資料'); return; }
+  // 確保「合作次數」「級別」自訂欄位存在
+  const needed = [
+    {id:'collab_count', label:'合作次數', type:'text'},
+    {id:'tier', label:'級別', type:'text'},
+  ];
+  needed.forEach(n=>{
+    if(!cfg.collabFields.some(f=>f.id===n.id)) cfg.collabFields.push(n);
+  });
+  const existingAccounts = new Set(collabs.map(c=>(c.account||'').toLowerCase()).filter(Boolean));
+  const existingNames = new Set(collabs.map(c=>(c.nickname||'').toLowerCase()).filter(Boolean));
+  let added = 0, skipped = 0;
+  SEED_COLLABS.forEach(s=>{
+    const accKey = (s.account||'').toLowerCase();
+    const nameKey = (s.nickname||'').toLowerCase();
+    if((accKey && existingAccounts.has(accKey)) || (nameKey && existingNames.has(nameKey))){
+      skipped++; return;
+    }
+    const c = newCollab({
+      nickname: s.nickname, account: s.account, igLink: s.igLink,
+      igFollowers: s.igFollowers, igFollowersUpdatedAt: s.igFollowers ? new Date().toISOString().slice(0,10) : '',
+      threadsFollowers: s.threadsFollowers, petType: s.petType, quoteMode: s.quoteMode,
+      notes: s.notes, referrer: s.referrer, pastWorks: s.pastWorks, region: s.region,
+      types: s.types, custom: s.custom,
+    });
+    collabs.push(c);
+    existingAccounts.add(accKey); existingNames.add(nameKey);
+    added++;
+  });
+  saveConfig(); saveCollabs(); render();
+  showToast(`已匯入 ${added} 筆，略過重複 ${skipped} 筆`);
+}
+
+/* ============================= 設定：欄位與顏色 ============================= */
+function renderSettings(){
+  const statusRows = cfg.statuses.map((s,i)=>`
+    <div class="settings-row" data-idx="${i}">
+      <div class="swatch-wrap">
+        <input type="color" class="tiny" data-action="statusColor" data-idx="${i}" value="${s.color}">
+      </div>
+      <input type="text" data-action="statusLabel" data-idx="${i}" value="${esc(s.label)}">
+      <button class="btn sm danger" data-action="delStatus" data-idx="${i}">刪除</button>
+    </div>`).join('');
+
+  const brandRows = cfg.brands.map((b,i)=>`
+    <div class="settings-row" data-idx="${i}">
+      <input type="text" data-action="brandLabel" data-idx="${i}" value="${esc(b)}">
+      <button class="btn sm danger" data-action="delBrand" data-idx="${i}">刪除</button>
+    </div>`).join('');
+
+  const projFieldRows = cfg.projectFields.map((f,i)=>`
+    <div class="settings-row" data-idx="${i}">
+      <input type="text" style="flex:1.3" data-action="pfLabel" data-idx="${i}" value="${esc(f.label)}">
+      <span class="mono" style="font-size:11px;color:var(--ink-soft); width:64px;">${f.type}</span>
+      <button class="btn sm danger" data-action="delPF" data-idx="${i}">刪除</button>
+    </div>`).join('');
+
+  const collabFieldRows = cfg.collabFields.map((f,i)=>`
+    <div class="settings-row" data-idx="${i}">
+      <input type="text" style="flex:1.3" data-action="cfLabel" data-idx="${i}" value="${esc(f.label)}">
+      <span class="mono" style="font-size:11px;color:var(--ink-soft); width:64px;">${f.type}</span>
+      <button class="btn sm danger" data-action="delCF" data-idx="${i}">刪除</button>
+    </div>`).join('');
+
+  return `
+  <div class="panel">
+    <div class="panel-head"><h3>狀態顏色設定</h3><span class="sub">變更後，所有專案的色塊會自動套用</span></div>
+    <div class="panel-body">
+      <div class="settings-list">${statusRows}</div>
+      <div style="margin-top:12px;"><button class="btn" id="btnAddStatus">＋ 新增狀態</button></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><h3>品牌清單</h3><span class="sub">專案表格「品牌」欄位的可選項目</span></div>
+    <div class="panel-body">
+      <div class="settings-list">${brandRows}</div>
+      <div style="margin-top:12px;"><button class="btn" id="btnAddBrand">＋ 新增品牌</button></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><h3>檔期排程・自訂欄位</h3><span class="sub">會即時新增到「檔期排程」表格與新增表單中</span></div>
+    <div class="panel-body">
+      <div class="settings-list">${projFieldRows || '<div class="sub">尚未新增自訂欄位</div>'}</div>
+      ${addFieldFormHtml('pf')}
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><h3>合作名單・自訂欄位</h3><span class="sub">會即時新增到「合作名單」表格與新增表單中</span></div>
+    <div class="panel-body">
+      <div class="settings-list">${collabFieldRows || '<div class="sub">尚未新增自訂欄位</div>'}</div>
+      ${addFieldFormHtml('cf')}
+    </div>
+  </div>`;
+}
+
+function addFieldFormHtml(prefix){
+  return `
+  <div class="field-grid-add">
+    <div class="field"><label>欄位名稱</label><input type="text" id="${prefix}NewLabel" placeholder="例如：合作結案日"></div>
+    <div class="field"><label>型別</label>
+      <select id="${prefix}NewType">
+        <option value="text">文字</option>
+        <option value="number">數字</option>
+        <option value="date">日期</option>
+        <option value="select">下拉選單</option>
+      </select>
+    </div>
+    <div class="field"><label>選項（下拉選單用，逗號分隔）</label><input type="text" id="${prefix}NewOptions" placeholder="A,B,C"></div>
+    <button class="btn accent" id="${prefix}AddBtn">＋ 新增欄位</button>
+  </div>`;
+}
+
+/* ============================= 事件綁定（每次 render 後執行） ============================= */
+function bindDynamic(){
+  // ---- projects table ----
+  const projTbody = document.getElementById('projTbody');
+  if(projTbody){
+    projTbody.addEventListener('change', onProjectFieldChange);
+    projTbody.addEventListener('click', onProjectRowClick);
+  }
+  const addRowBtn = document.getElementById('btnAddRowInline');
+  if(addRowBtn) addRowBtn.onclick = ()=>{
+    projects.push(newProject()); saveProjects(); render();
+    setTimeout(()=>{ const rows=document.querySelectorAll('#projTbody tr'); const last=rows[rows.length-1]; if(last) last.querySelector('input[data-field=taskName]')?.focus(); },0);
+  };
+  const addFormBtn = document.getElementById('btnAddProjectForm');
+  if(addFormBtn) addFormBtn.onclick = ()=>openProjectFormModal();
+  const importProjBtn = document.getElementById('btnImportProjects');
+  if(importProjBtn) importProjBtn.onclick = importSeedProjects;
+
+  // ---- collabs table ----
+  const collabTbody = document.getElementById('collabTbody');
+  if(collabTbody){
+    collabTbody.addEventListener('change', onCollabFieldChange);
+    collabTbody.addEventListener('click', onCollabRowClick);
+  }
+  const addCollabRowBtn = document.getElementById('btnAddCollabInline');
+  if(addCollabRowBtn) addCollabRowBtn.onclick = ()=>{
+    collabs.push(newCollab()); saveCollabs(); render();
+    setTimeout(()=>{ const rows=document.querySelectorAll('#collabTbody tr'); const last=rows[rows.length-1]; if(last) last.querySelector('input[data-field=nickname]')?.focus(); },0);
+  };
+  const addCollabFormBtn = document.getElementById('btnAddCollabForm');
+  if(addCollabFormBtn) addCollabFormBtn.onclick = ()=>openCollabFormModal();
+  const importBtn = document.getElementById('btnImportSeed');
+  if(importBtn) importBtn.onclick = importSeedCollabs;
+
+  // ---- settings ----
+  bindSettingsEvents();
+}
+
+function onProjectFieldChange(e){
+  const tr = e.target.closest('tr'); if(!tr) return;
+  const id = tr.dataset.id; const p = projects.find(x=>x.id===id); if(!p) return;
+  const field = e.target.dataset.field, custom = e.target.dataset.custom;
+  if(field==='rowColor'){
+    const st = statusOf(p.status);
+    p.rowColor = (e.target.value.toLowerCase()===st.color.toLowerCase()) ? '' : e.target.value;
+  } else if(field){ p[field] = e.target.value; }
+  else if(custom){ p.custom = p.custom||{}; p.custom[custom] = e.target.value; }
+  saveProjects();
+  if(field==='status' || field==='rowColor') render(); else refreshRowBar(tr,p);
+}
+function refreshRowBar(tr,p){
+  const st = statusOf(p.status);
+  const bar = tr.querySelector('.accent-bar div');
+  if(bar) bar.style.background = p.rowColor || st.color;
+}
+
+function onProjectRowClick(e){
+  const assignBtn = e.target.closest('[data-action=assign]');
+  if(assignBtn){ openAssignModal(assignBtn.dataset.id); return; }
+  const delBtn = e.target.closest('[data-action=delProject]');
+  if(delBtn){
+    const id = delBtn.dataset.id;
+    if(confirm('確定要刪除此專案嗎？此動作無法復原。')){
+      projects = projects.filter(p=>p.id!==id); saveProjects(); render();
+    }
+    return;
+  }
+  const clearBtn = e.target.closest('[data-action=clearColor]');
+  if(clearBtn){
+    const p = projects.find(x=>x.id===clearBtn.dataset.id);
+    if(p){ p.rowColor=''; saveProjects(); render(); }
+    return;
+  }
+}
+
+function onCollabFieldChange(e){
+  const tr = e.target.closest('tr'); if(!tr) return;
+  const id = tr.dataset.id; const c = collabs.find(x=>x.id===id); if(!c) return;
+  const field = e.target.dataset.field, custom = e.target.dataset.custom;
+  if(field){
+    c[field] = e.target.value;
+    if(field==='igFollowers'){ c.igFollowersUpdatedAt = new Date().toISOString().slice(0,10); }
+  }
+  else if(custom){ c.custom = c.custom||{}; c.custom[custom] = e.target.value; }
+  saveCollabs();
+  if(field==='igFollowers' || field==='igLink') render();
+}
+function onCollabRowClick(e){
+  const tag = e.target.closest('[data-action=toggleType]');
+  if(tag){
+    const c = collabs.find(x=>x.id===tag.dataset.id); if(!c) return;
+    const t = tag.dataset.type;
+    if(c.types.includes(t)) c.types = c.types.filter(x=>x!==t);
+    else c.types = [...c.types, t];
+    saveCollabs(); render();
+    return;
+  }
+  const delBtn = e.target.closest('[data-action=delCollab]');
+  if(delBtn){
+    if(confirm('確定要刪除此合作對象嗎？此動作無法復原。')){
+      collabs = collabs.filter(c=>c.id!==delBtn.dataset.id); saveCollabs(); render();
+    }
+    return;
+  }
+  const histBtn = e.target.closest('[data-action=viewHistory]');
+  if(histBtn){ openHistoryModal(histBtn.dataset.id); return; }
+}
+
+/* ============================= 設定頁事件 ============================= */
+function bindSettingsEvents(){
+  document.querySelectorAll('[data-action=statusColor]').forEach(el=>{
+    el.onchange = ()=>{ cfg.statuses[el.dataset.idx].color = el.value; saveConfig(); render(); };
+  });
+  document.querySelectorAll('[data-action=statusLabel]').forEach(el=>{
+    el.onchange = ()=>{ cfg.statuses[el.dataset.idx].label = el.value; saveConfig(); render(); };
+  });
+  document.querySelectorAll('[data-action=delStatus]').forEach(el=>{
+    el.onclick = ()=>{ if(cfg.statuses.length<=1){ showToast('至少要保留一個狀態'); return;} cfg.statuses.splice(el.dataset.idx,1); saveConfig(); render(); };
+  });
+  const addStatus = document.getElementById('btnAddStatus');
+  if(addStatus) addStatus.onclick = ()=>{ cfg.statuses.push({id:uid(), label:'新狀態', color:'#8B95A1'}); saveConfig(); render(); };
+
+  document.querySelectorAll('[data-action=brandLabel]').forEach(el=>{
+    el.onchange = ()=>{ cfg.brands[el.dataset.idx] = el.value; saveConfig(); render(); };
+  });
+  document.querySelectorAll('[data-action=delBrand]').forEach(el=>{
+    el.onclick = ()=>{ cfg.brands.splice(el.dataset.idx,1); saveConfig(); render(); };
+  });
+  const addBrand = document.getElementById('btnAddBrand');
+  if(addBrand) addBrand.onclick = ()=>{ cfg.brands.push('新品牌'); saveConfig(); render(); };
+
+  bindFieldEditor('pf', 'projectFields');
+  bindFieldEditor('cf', 'collabFields');
+}
+
+function bindFieldEditor(prefix, cfgKey){
+  document.querySelectorAll(`[data-action=${prefix}Label]`).forEach(el=>{
+    el.onchange = ()=>{ cfg[cfgKey][el.dataset.idx].label = el.value; saveConfig(); render(); };
+  });
+  document.querySelectorAll(`[data-action=del${prefix.toUpperCase()}]`).forEach(el=>{
+    el.onclick = ()=>{ cfg[cfgKey].splice(el.dataset.idx,1); saveConfig(); render(); };
+  });
+  const btn = document.getElementById(`${prefix}AddBtn`);
+  if(btn) btn.onclick = ()=>{
+    const label = document.getElementById(`${prefix}NewLabel`).value.trim();
+    const type = document.getElementById(`${prefix}NewType`).value;
+    const optsRaw = document.getElementById(`${prefix}NewOptions`).value.trim();
+    if(!label){ showToast('請輸入欄位名稱'); return; }
+    const field = {id: uid(), label, type};
+    if(type==='select') field.options = optsRaw ? optsRaw.split(',').map(s=>s.trim()).filter(Boolean) : [];
+    cfg[cfgKey].push(field);
+    saveConfig(); render();
+    showToast('已新增自訂欄位');
+  };
+}
+
+/* ============================= Modal 共用 ============================= */
+function openModal(html, opts){
+  const root = document.getElementById('modalRoot');
+  root.innerHTML = `<div class="modal-mask" id="modalMask"><div class="modal ${opts&&opts.wide?'wide':''}">${html}</div></div>`;
+  document.getElementById('modalMask').addEventListener('mousedown', e=>{
+    if(e.target.id==='modalMask') closeModal();
+  });
+  document.querySelectorAll('.modal .x, .modal [data-action=closeModal]').forEach(el=>el.onclick=closeModal);
+}
+function closeModal(){ document.getElementById('modalRoot').innerHTML=''; }
+
+/* ---- 新增專案表單 ---- */
+function openProjectFormModal(){
+  const statusOpts = cfg.statuses.map(s=>`<option value="${s.id}">${esc(s.label)}</option>`).join('');
+  const brandOpts = cfg.brands.map(b=>`<option value="${esc(b)}">${esc(b)}</option>`).join('');
+  const qOpts = quarterOptions().map(q=>`<option value="${q}" ${q==='2026Q1'?'selected':''}>${q}</option>`).join('');
+  const customFieldsHtml = cfg.projectFields.map(f=>`
+    <div class="field"><label>${esc(f.label)}</label>${formInputForField(f,'pfv_'+f.id)}</div>`).join('');
+  openModal(`
+    <div class="modal-head"><h3>以表單新增專案</h3><button class="x">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field full"><label>任務名稱</label><input id="npTaskName" type="text" placeholder="例如：8月 IG 開箱合作"></div>
+        <div class="field"><label>品牌</label><select id="npBrand">${brandOpts}</select></div>
+        <div class="field"><label>專案季度</label><select id="npQuarter">${qOpts}</select></div>
+        <div class="field"><label>狀態</label><select id="npStatus">${statusOpts}</select></div>
+        <div class="field"><label>負責人</label><input id="npOwner" type="text"></div>
+        <div class="field"><label>啟動時間</label><input id="npStart" type="date"></div>
+        <div class="field"><label>最晚Brief時間</label><input id="npBrief" type="date"></div>
+        <div class="field"><label>上線時間</label><input id="npLaunch" type="date"></div>
+        <div class="field full"><label>備註</label><textarea id="npNotes"></textarea></div>
+        ${customFieldsHtml}
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" data-action="closeModal">取消</button>
+      <button class="btn primary" id="npSubmit">新增專案</button>
+    </div>
+  `);
+  document.getElementById('npSubmit').onclick = ()=>{
+    const p = newProject({
+      taskName: document.getElementById('npTaskName').value.trim(),
+      brand: document.getElementById('npBrand').value,
+      quarter: document.getElementById('npQuarter').value,
+      status: document.getElementById('npStatus').value,
+      owner: document.getElementById('npOwner').value,
+      startDate: document.getElementById('npStart').value,
+      briefDeadline: document.getElementById('npBrief').value,
+      launchDate: document.getElementById('npLaunch').value,
+      notes: document.getElementById('npNotes').value,
+    });
+    cfg.projectFields.forEach(f=>{
+      const el = document.getElementById('pfv_'+f.id);
+      if(el){ p.custom[f.id] = el.value; }
+    });
+    projects.unshift(p); saveProjects(); closeModal(); render();
+    showToast('已新增專案');
+  };
+}
+
+/* ---- 新增合作對象表單 ---- */
+function openCollabFormModal(){
+  const customFieldsHtml = cfg.collabFields.map(f=>`
+    <div class="field"><label>${esc(f.label)}</label>${formInputForField(f,'cfv_'+f.id)}</div>`).join('');
+  openModal(`
+    <div class="modal-head"><h3>以表單新增合作對象</h3><button class="x">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field full"><label>身份</label>
+          <div>
+            ${TYPE_OPTIONS.map(t=>`<label style="display:inline-flex;align-items:center;gap:5px;font-weight:500;margin-right:14px;"><input type="checkbox" class="ncType" value="${esc(t)}" ${t==='KOC'?'checked':''}> ${esc(t)}</label>`).join('')}
+          </div>
+        </div>
+        <div class="field"><label>地區</label><input id="ncRegion" type="text"></div>
+        <div class="field"><label>KOC/素人稱呼</label><input id="ncNickname" type="text"></div>
+        <div class="field"><label>帳號名</label><input id="ncAccount" type="text" placeholder="@..."></div>
+        <div class="field full"><label>IG 連結</label><input id="ncIgLink" type="text" placeholder="https://www.instagram.com/..."></div>
+        <div class="field"><label>IG 粉絲數</label><input id="ncIg" type="number"></div>
+        <div class="field"><label>Threads 粉絲數</label><input id="ncThreads" type="number"></div>
+        <div class="field"><label>寵物種類</label><input id="ncPet" type="text"></div>
+        <div class="field"><label>報價/合作模式</label><input id="ncQuote" type="text"></div>
+        <div class="field"><label>推薦人</label><input id="ncReferrer" type="text"></div>
+        <div class="field full"><label>合作作品</label><input id="ncPastWorks" type="text" placeholder="以逗號分隔多筆"></div>
+        <div class="field full"><label>備註</label><textarea id="ncNotes"></textarea></div>
+        ${customFieldsHtml}
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" data-action="closeModal">取消</button>
+      <button class="btn primary" id="ncSubmit">新增合作對象</button>
+    </div>
+  `);
+  document.getElementById('ncSubmit').onclick = ()=>{
+    const types = Array.from(document.querySelectorAll('.ncType:checked')).map(el=>el.value);
+    const c = newCollab({
+      nickname: document.getElementById('ncNickname').value.trim(),
+      account: document.getElementById('ncAccount').value.trim(),
+      igLink: document.getElementById('ncIgLink').value.trim(),
+      igFollowers: document.getElementById('ncIg').value,
+      igFollowersUpdatedAt: document.getElementById('ncIg').value ? new Date().toISOString().slice(0,10) : '',
+      threadsFollowers: document.getElementById('ncThreads').value,
+      petType: document.getElementById('ncPet').value,
+      quoteMode: document.getElementById('ncQuote').value,
+      referrer: document.getElementById('ncReferrer').value,
+      pastWorks: document.getElementById('ncPastWorks').value,
+      region: document.getElementById('ncRegion').value,
+      notes: document.getElementById('ncNotes').value,
+      types: types.length?types:['KOC'],
+    });
+    cfg.collabFields.forEach(f=>{
+      const el = document.getElementById('cfv_'+f.id);
+      if(el){ c.custom[f.id] = el.value; }
+    });
+    collabs.unshift(c); saveCollabs(); closeModal(); render();
+    showToast('已新增合作對象');
+  };
+}
+
+function formInputForField(f, elId){
+  if(f.type==='select'){
+    const opts = (f.options||[]).map(o=>`<option value="${esc(o)}">${esc(o)}</option>`).join('');
+    return `<select id="${elId}"><option value=""></option>${opts}</select>`;
+  }
+  if(f.type==='date') return `<input id="${elId}" type="date">`;
+  if(f.type==='number') return `<input id="${elId}" type="number">`;
+  return `<input id="${elId}" type="text">`;
+}
+
+/* ---- 指派 KOC / 活動內容 modal ---- */
+function openAssignModal(projectId){
+  const p = projects.find(x=>x.id===projectId); if(!p) return;
+  renderAssignModal(p);
+}
+function renderAssignModal(p){
+  const collabOpts = collabs.map(c=>`<option value="${c.id}">${esc(c.nickname||'(未命名)')} ${c.account?('· '+esc(c.account)):''}</option>`).join('');
+  const rows = p.assignedKOCs.map((a,i)=>{
+    const c = collabs.find(x=>x.id===a.collabId);
+    return `
+    <div class="assign-row" data-idx="${i}">
+      <div class="row-top">
+        <select data-action="assignCollab" data-idx="${i}">
+          <option value="">— 選擇合作對象 —</option>
+          ${collabs.map(cc=>`<option value="${cc.id}" ${cc.id===a.collabId?'selected':''}>${esc(cc.nickname||'(未命名)')}${cc.account?(' · '+esc(cc.account)):''}</option>`).join('')}
+        </select>
+        <button class="del-btn" data-action="delAssign" data-idx="${i}">✕</button>
+      </div>
+      <textarea placeholder="活動內容 / 交付項目 / 排程細節…" data-action="assignContent" data-idx="${i}">${esc(a.content||'')}</textarea>
+    </div>`;
+  }).join('');
+  openModal(`
+    <div class="modal-head">
+      <div>
+        <h3>指派 KOC・${esc(p.taskName || '未命名專案')}</h3>
+        <div class="sub" style="margin-top:3px;color:var(--ink-soft);font-size:12px;">${esc(p.brand)} · ${esc(p.quarter)}</div>
+      </div>
+      <button class="x">✕</button>
+    </div>
+    <div class="modal-body" id="assignBody">
+      ${rows || '<div class="sub" style="color:var(--ink-soft);">尚未指派任何合作對象</div>'}
+      <button class="btn" id="btnAddAssign" style="margin-top:6px;">＋ 新增指派</button>
+    </div>
+    <div class="modal-foot">
+      <button class="btn primary" data-action="closeModal">完成</button>
+    </div>
+  `, {wide:true});
+
+  document.getElementById('btnAddAssign').onclick = ()=>{
+    p.assignedKOCs.push({collabId:'', content:''});
+    saveProjects(); renderAssignModal(p); render();
+  };
+  document.querySelectorAll('[data-action=assignCollab]').forEach(el=>{
+    el.onchange = ()=>{ p.assignedKOCs[el.dataset.idx].collabId = el.value; saveProjects(); render(); };
+  });
+  document.querySelectorAll('[data-action=assignContent]').forEach(el=>{
+    el.onchange = ()=>{ p.assignedKOCs[el.dataset.idx].content = el.value; saveProjects(); };
+  });
+  document.querySelectorAll('[data-action=delAssign]').forEach(el=>{
+    el.onclick = ()=>{ p.assignedKOCs.splice(el.dataset.idx,1); saveProjects(); renderAssignModal(p); render(); };
+  });
+}
+
+/* ---- 合作對象歷史紀錄 / 搜尋詳情 ---- */
+function collabHistory(collabId){
+  const hits = [];
+  projects.forEach(p=>{
+    (p.assignedKOCs||[]).forEach(a=>{
+      if(a.collabId===collabId) hits.push({project:p, content:a.content});
+    });
+  });
+  return hits;
+}
+function openHistoryModal(collabId){
+  const c = collabs.find(x=>x.id===collabId); if(!c) return;
+  const hist = collabHistory(collabId);
+  const typesHtml = typeBadgesHtml(c.types);
+  const histHtml = hist.length ? hist.map(h=>{
+    const st = statusOf(h.project.status);
+    return `<div class="history-item">
+      <div class="h1"><span class="badge" style="background:${hexToRgba(st.color,.16)};color:${st.color}"><span class="bdot"></span>${esc(st.label)}</span> ${esc(h.project.taskName||'(未命名專案)')}</div>
+      <div class="h2">${esc(h.project.brand)} · ${esc(h.project.quarter)}${h.content?(' · '+esc(h.content)):''}</div>
+    </div>`;
+  }).join('') : '<div class="sub" style="color:var(--ink-soft);">尚無系統內的合作專案紀錄</div>';
+
+  openModal(`
+    <div class="modal-head"><h3>合作對象詳情</h3><button class="x">✕</button></div>
+    <div class="modal-body">
+      <div class="profile-card">
+        <div class="avatar">${esc((c.nickname||'?').slice(0,1))}</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:15px;">${esc(c.nickname||'(未命名)')} ${typesHtml}</div>
+          <div class="kv"><b>帳號：</b>${esc(c.account)||'—'}${c.igLink?` · <a href="${esc(c.igLink)}" target="_blank" rel="noopener">開啟IG</a>`:''}　<b>地區：</b>${esc(c.region)||'—'}</div>
+          <div class="kv"><b>IG：</b>${fmtFollowers(c.igFollowers)}（${freshnessHtml(c.igFollowersUpdatedAt)}）　<b>Threads：</b>${fmtFollowers(c.threadsFollowers)}　<b>寵物種類：</b>${esc(c.petType)||'—'}</div>
+          <div class="kv"><b>報價/合作模式：</b>${esc(c.quoteMode)||'—'}　<b>推薦人：</b>${esc(c.referrer)||'—'}</div>
+          ${c.pastWorks?`<div class="kv"><b>合作作品：</b>${esc(c.pastWorks)}</div>`:''}
+          ${c.notes?`<div class="kv"><b>備註：</b>${esc(c.notes)}</div>`:''}
+        </div>
+      </div>
+      <h3 style="font-size:13.5px;margin-bottom:8px;">系統內合作紀錄（${hist.length}）</h3>
+      ${histHtml}
+    </div>
+    <div class="modal-foot"><button class="btn primary" data-action="closeModal">關閉</button></div>
+  `, {wide:true});
+}
+
+/* ============================= 置頂搜尋（防止 KOC / 素人重複建檔） ============================= */
+const searchInput = document.getElementById('globalSearch');
+const searchDrop = document.getElementById('searchDrop');
+searchInput.addEventListener('input', ()=>{
+  const q = searchInput.value.trim().toLowerCase();
+  if(!q){ searchDrop.style.display='none'; return; }
+  const hits = collabs.filter(c=>{
+    return (c.nickname||'').toLowerCase().includes(q) || (c.account||'').toLowerCase().includes(q);
+  });
+  if(!hits.length){
+    searchDrop.innerHTML = `<div class="hint">查無符合「${esc(searchInput.value.trim())}」的資料，這可能是一位<b>新的</b>合作對象，可到「合作名單」新增，避免之後重複建檔。</div>`;
+  } else {
+    searchDrop.innerHTML = hits.map(c=>{
+      const typesHtml = typeBadgesHtml(c.types);
+      const histCount = collabHistory(c.id).length;
+      return `<div class="search-hit" data-id="${c.id}">
+        <div class="row1">${esc(c.nickname||'(未命名)')} ${typesHtml}</div>
+        <div class="row2">${esc(c.account)||'—'} · IG ${fmtFollowers(c.igFollowers)} · 過往合作 ${histCount} 筆${c.region?(' · '+esc(c.region)):''}</div>
+      </div>`;
+    }).join('');
+  }
+  searchDrop.style.display='block';
+});
+searchDrop.addEventListener('click', e=>{
+  const hit = e.target.closest('.search-hit');
+  if(hit){ openHistoryModal(hit.dataset.id); searchDrop.style.display='none'; searchInput.value=''; }
+});
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.search-wrap')) searchDrop.style.display='none';
+});
+
+/* ============================= 啟動 ============================= */
+loadAll();
+</script>
+</body>
+</html>
